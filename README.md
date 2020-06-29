@@ -5,7 +5,7 @@
 [![Support badge](https://nexus.lab.fiware.org/repository/raw/public/badges/stackoverflow/fiware.svg)](https://stackoverflow.com/questions/tagged/fiware)
 <br/> [![Documentation](https://img.shields.io/readthedocs/fiware-tutorials.svg)](https://fiware-tutorials.rtfd.io)
 
-This tutorial extends the previous [Securing Access tutorial](https://github.com/FIWARE/tutorials.Securing-Access). This tutorial also secures access to a FIWARE application but using various OpenID Connect flows to authenticate users.
+This tutorial complements the previous [Securing Access tutorial](https://github.com/FIWARE/tutorials.Securing-Access). This tutorial also secures access to a FIWARE application but using various OpenID Connect flows to authenticate users.
 
 The tutorial discusses code showing how to integrate Keyrock within a web application and demonstrates examples of
 Authorization Server interactions using the **Keyrock** GUI. Some [cUrl](https://ec.haxx.se/) commands are also used to
@@ -22,7 +22,7 @@ available.
 <summary><strong>Details</strong></summary>
 
 -   [Authenticating Identities](#authenticating-identities)
-    -   [Standard Concepts of Identity Management](#standard-concepts-of-identity-management)
+    -   [Standard Concepts of Json Web Tokens](#standard-concepts-of-json-web-tokens)
 -   [Prerequisites](#prerequisites)
     -   [Docker](#docker)
     -   [Cygwin](#cygwin)
@@ -30,27 +30,17 @@ available.
     -   [Tutorial Security Configuration](#tutorial-security-configuration)
 -   [Start Up](#start-up)
     -   [Dramatis Personae](#dramatis-personae)
--   [OAuth2 Grant Flows](#oauth2-grant-flows)
-    -   [User Credentials Grant](#user-credentials-grant)
-        -   [Logging-in with a Password](#logging-in-with-a-password)
-        -   [Retrieving User Details from an Access Token](#retrieving-user-details-from-an-access-token)
-        -   [User Credentials - Sample Code](#user-credentials---sample-code)
-        -   [User Credentials - Running the Example](#user-credentials---running-the-example)
-    -   [Authorization Code Grant](#authorization-code-grant)
+-   [OIDC Flows](#oidc-flows)
+    -   [Authorization Code Flow](#authorization-code-flow)
         -   [Authorization Code - Sample Code](#authorization-code---sample-code)
         -   [Authorization Code - Running the Example](#authorization-code---running-the-example)
-    -   [Implicit Grant](#implicit-grant)
-        -   [Implicit Grant - Sample Code](#implicit-grant---sample-code)
-        -   [Implicit Grant - Running the Example](#implicit-grant---running-the-example)
-    -   [Client Credentials Grant](#client-credentials-grant)
-        -   [Logging in as an Application](#logging-in-as-an-application)
-        -   [Client Credentials Grant - Sample Code](#client-credentials-grant---sample-code)
-        -   [Client Credentials Grant - Running the Example](#client-credentials-grant---running-the-example)
-    -   [Refresh Token](#refresh-token)
-        -   [Availability Check](#availability-check)
-        -   [Refresh Access Token](#refresh-access-token)
-        -   [Refresh Token - Sample Code](#refresh-token---sample-code)
-        -   [Refresh Token - Running the Example](#refresh-token---running-the-example)
+    -   [Implicit Flow](#implicit-flow)
+        -   [Implicit Flow - Sample Code](#implicit-flow---sample-code)
+        -   [Implicit Flow - Running the Example](#implicit-flow---running-the-example)
+    -   [Hybrid Flow](#hybrid-flow)
+        -   [Hybrid - Sample Code](#authorization-code---sample-code)
+        -   [Hybrid - Running the Example](#authorization-code---running-the-example)
+
 
 </details>
 
@@ -61,11 +51,7 @@ available.
 >
 > — David Soul
 
-Digital identities represent both the characteristics of people and the actions they carry out on the Internet. In 
-order to secure an application it is necessary to authenticate that the identity is really who it says it is. In addition
-to OAuth 2.0, the FIWARE **Keyrock** generic enabler supports [OpenID Connect](https://openid.net/connect/) to enable 
-third-party applications to authenticate users. **OpenID Connect** is a simple identity layer on top of the OAuth 2.0 protocol.
-It enables to verify the identity of users and to obtain a basic profile about these users by using [Json Web Tokens](https://jwt.io/).
+Digital identities represent both the characteristics of people and the actions they carry out on the Internet. In order to secure an application it is necessary to authenticate that the identity is really who it says it is. In addition to OAuth 2.0, the FIWARE **Keyrock** generic enabler supports [OpenID Connect](https://openid.net/connect/) (OIDC) to enable third-party applications to authenticate users. **OpenID Connect** is a simple identity layer on top of the OAuth 2.0 protocol. It enables to verify the identity of users and to obtain a basic profile about these users by using [Json Web Tokens](https://jwt.io/).
 
 The OpenID Connect flows are build on the top of these three OAuth 2.0 grant flows:
 
@@ -74,54 +60,38 @@ The OpenID Connect flows are build on the top of these three OAuth 2.0 grant flo
 -   [Hybrid](https://openid.net/specs/openid-connect-core-1_0.html#HybridFlowAuth)
 
 
-Authorization and authentication are two completely different things. The first one allows or not to access certain data while
-the second one is about sign in. OAuth 2.0 enables authorization processes but it lacks ways to identify and authenticate users.
-That is way OpenID Connect was created.
+Authorization and authentication are two completely different things. The first one allows or not to access certain data while the second one is about sign in. OAuth 2.0 enables authorization processes but it lacks ways to identify and authenticate users. OIDC was created to solve OAuth 2.0 authentication issue. Either OAuth 2.0 and OIDC generate a token that identifies the user avoiding exposing the username and password. Particularly, OIDC generates a Json Web Token (JWT) that applications can intrinsically  validate and obtain user information directly from itself.
 
+## Standard Concepts of Json Web Tokens
 
-The primary concept is that both **Users** and **Applications** must first identify themselves using a standard OAuth2
-Challenge-Response mechanism. Thereafter a user is assigned a token which they append to every subsequent request. This
-token identifies the user, the application and the rights the user is able to exercise. **Keyrock** can then be used
-with other enablers can be used to limit and lock-down access. The details of the access flows are discussed below and
-in subsequent tutorials.
+A JWT has the follofing structure:
 
-The reasoning behind OAuth2 is that you never need to expose your own username and password to a third party to give
-them full access - you merely permit the relevant access which can be either Read-Only or Read-Write and such access can
-be defined down to a granular level. Furthermore there is provision for revoking access at any time, leaving the
-resource owner in control of who can access what.
+-   Header. It identifies the algorithm used to sign the Json Web Token.
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+-   Payload. It contains user data, as well as information on when the token was created and who created it.
+```json
+{
+  "sub": "1234567890",
+  "iss": "https://fiware-idm.com",
+  "iat": 1516239022,
+  "username": "Alice",
+  "gravatar": true
+}
+```
+-   Signature. It is generated as follows:
+```
+Crypto-Algorithm ( base64urlEncoding(header) + '.' + base64urlEncoding(payload), secret)
+```
 
-Once the application is able to authenticate users, it is also possible to lock down access using access control
-mechanisms. Access control requires having an access policy - in other words defining who can do what. We have already
-defined roles and permissions within the [previous tutorial](https://github.com/FIWARE/tutorials.Roles-Permissions), and
-now need to programmatically enforce this policy by adding in a simple Policy Decision Point (PDP) – which evaluates and
-issues authorization decisions, and then secure access by enforcing the decision using a Policy Enforcement Point (PEP).
-
-## Standard Concepts of Identity Management
-
-The following common objects are found with the **Keyrock** Identity Management database:
-
--   **User** - Any signed up user able to identify themselves with an eMail and password. Users can be assigned rights
-    individually or as a group
--   **Application** - Any securable FIWARE application consisting of a series of microservices
--   **Organization** - A group of users who can be assigned a series of rights. Altering the rights of the organization
-    effects the access of all users of that organization
--   **OrganizationRole** - Users can either be members or admins of an organization - Admins are able to add and remove
-    users from their organization, members merely gain the roles and permissions of an organization. This allows each
-    organization to be responsible for their members and removes the need for a super-admin to administer all rights
--   **Role** - A role is a descriptive bucket for a set of permissions. A role can be assigned to either a single user
-    or an organization. A signed-in user gains all the permissions from all of their own roles plus all of the roles
-    associated to their organization
--   **Permission** - An ability to do something on a resource within the system
-
-Additionally two further non-human application objects can be secured within a FIWARE application:
-
--   **IoTAgent** - a proxy between IoT Sensors and the Context Broker
--   **PEPProxy** - a middleware for use between generic enablers challenging the rights of a user.
-
-The relationship between the objects can be seen below - the entities marked in red are used directly within this
-tutorial:
-
-![](https://fiware.github.io/tutorials.Securing-Access/img/entities.png)
+The JWT is the result of enconding each part using Base64 and concatenating them with points. For instance:
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiaHR0cHM6Ly9maXdhcmUtaWRtLmNvbSIsImlhdCI6MTUxNjIzOTAyMiwidXNlcm5hbWUiOiJBbGljZSIsImdyYXZhdGFyIjp0cnVlfQ.dZ7z0u_4FZC7xiVQDtGAl7NRT0fK8_5hJqYa9E-4xGE
+```
 
 # Prerequisites
 
@@ -147,36 +117,21 @@ to provide a command-line functionality similar to a Linux distribution on Windo
 
 # Architecture
 
-This application adds OAuth2-driven security into the existing Stock Management and Sensors-based application created in
+This application adds OIDC-driven security into the existing Stock Management and Sensors-based application created in
 [previous tutorials](https://github.com/FIWARE/tutorials.IoT-Agent/) by using the data created in the first
 [security tutorial](https://github.com/FIWARE/tutorials.Identity-Management/) and reading it programmatically. It will
-make use of three FIWARE components - the [Orion Context Broker](https://fiware-orion.readthedocs.io/en/latest/),the
-[IoT Agent for UltraLight 2.0](https://fiware-iotagent-ul.readthedocs.io/en/latest/) and integrates the use of the
-[Keyrock](https://fiware-idm.readthedocs.io/en/latest/) Generic enabler. Usage of the Orion Context Broker is sufficient
-for an application to qualify as _“Powered by FIWARE”_.
-
-Both the Orion Context Broker and the IoT Agent rely on open source [MongoDB](https://www.mongodb.com/) technology to
-keep persistence of the information they hold. We will also be using the dummy IoT devices created in the
-[previous tutorial](https://github.com/FIWARE/tutorials.IoT-Sensors/). **Keyrock** uses its own
-[MySQL](https://www.mysql.com/) database.
+make use of one FIWARE component - the [Keyrock](https://fiware-idm.readthedocs.io/en/latest/) Generic enabler. **Keyrock**
+uses its own [MySQL](https://www.mysql.com/) database. This tutorial only focus on granting JWT by the use of OIDC. 
+You can practice using the tokens to securely access sensor information in the tutorial [Securing Access tutorial](https://github.com/FIWARE/tutorials.Securing-Access).
 
 Therefore the overall architecture will consist of the following elements:
 
--   The FIWARE [Orion Context Broker](https://fiware-orion.readthedocs.io/en/latest/) which will receive requests using
-    [NGSI-v2](https://fiware.github.io/specifications/OpenAPI/ngsiv2)
--   The FIWARE [IoT Agent for UltraLight 2.0](https://fiware-iotagent-ul.readthedocs.io/en/latest/) which will receive
-    southbound requests using [NGSI-v2](https://fiware.github.io/specifications/OpenAPI/ngsiv2) and convert them to
-    [UltraLight 2.0](https://fiware-iotagent-ul.readthedocs.io/en/latest/usermanual/index.html#user-programmers-manual)
-    commands for the devices
 -   FIWARE [Keyrock](https://fiware-idm.readthedocs.io/en/latest/) offer a complement Identity Management System
     including:
-    -   An OAuth2 authentication system for Applications and Users
+    -   An OAuth2 authorization system for Applications and Users
+    -   An OIDC authentication system for Applications and Users
     -   A site graphical frontend for Identity Management Administration
     -   An equivalent REST API for Identity Management via HTTP requests
--   The underlying [MongoDB](https://www.mongodb.com/) database :
-    -   Used by the **Orion Context Broker** to hold context data information such as data entities, subscriptions and
-        registrations
-    -   Used by the **IoT Agent** to hold device information such as device URLs and Keys
 -   A [MySQL](https://www.mysql.com/) database :
     -   Used to persist user identities, applications, roles and permissions
 -   The **Stock Management Frontend** does the following:
@@ -184,14 +139,11 @@ Therefore the overall architecture will consist of the following elements:
     -   Shows which products can be bought at each store
     -   Allows users to "buy" products and reduce the stock count.
     -   Allows authorized users into restricted areas
--   A webserver acting as set of [dummy IoT devices](https://github.com/FIWARE/tutorials.IoT-Sensors) using the
-    [UltraLight 2.0](https://fiware-iotagent-ul.readthedocs.io/en/latest/usermanual/index.html#user-programmers-manual)
-    protocol running over HTTP - access to certain resources is restricted.
 
 Since all interactions between the elements are initiated by HTTP requests, the entities can be containerized and run
 from exposed ports.
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/architecture.png)
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/architecture.png)
 
 The necessary configuration information for adding security to the **Stock Management Frontend** can be found in the
 `tutorial` section of the associated `docker-compose.yml` file - only the relevant variables are shown below:
@@ -220,6 +172,7 @@ tutorial:
         - "KEYROCK_PORT=3005"
         - "KEYROCK_CLIENT_ID=tutorial-dckr-site-0000-xpresswebapp"
         - "KEYROCK_CLIENT_SECRET=tutorial-dckr-site-0000-clientsecret"
+        - "KEYROCK_JWT_SECRET=jsonwebtokenpass"
         - "CALLBACK_URL=http://localhost:3000/login"
 ```
 
@@ -234,29 +187,20 @@ The `tutorial` container is driven by environment variables as shown:
 | Key                   | Value                                  | Description                                                                                    |
 | --------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | DEBUG                 | `tutorial:*`                           | Debug flag used for logging                                                                    |
-| WEB_APP_PORT          | `3000`                                 | Port used by web-app which displays the login screen & etc.                                    |
-| KEYROCK_URL           | `http://localhost`                     | This is URL of the **Keyrock** Web frontend itself, used for redirection when forwarding users |
-| KEYROCK_IP_ADDRESS    | `http://172.18.1.5`                    | This is URL of the **Keyrock** OAuth Communications                                            |
-| KEYROCK_PORT          | `3005`                                 | This is the port that **Keyrock** is listening on.                                             |
 | KEYROCK_CLIENT_ID     | `tutorial-dckr-site-0000-xpresswebapp` | The Client ID defined by Keyrock for this application                                          |
 | KEYROCK_CLIENT_SECRET | `tutorial-dckr-site-0000-clientsecret` | The Client Secret defined by Keyrock for this application                                      |
+| KEYROCK_JWT_SECRET    | `jsonwebtokenpass`                     | The JWT Secret defined by Keyrock for this application to validate id_tokens                   |
 | CALLBACK_URL          | `http://localhost:3000/login`          | The callback URL used by Keyrock when a challenge has succeeded.                               |
 
 The other `tutorial` container configuration values described in the YAML file have been described in previous tutorials
 
-The separate `KEYROCK_URL` and `KEYROCK_IP_ADDRESS` are only necessary because of the simplified Docker containerization
-used within the tutorial. The `KEYROCK_URL` variable with the value `localhost` is referring to the location externally
-exposed by the container, the `KEYROCK_IP_ADDRESS` variable refers to the same location but accessed from within the
-Docker network. Similarly the `CALLBACK_URL` contains `localhost` as it is assumed that the browser will be accessed
-from the same machine. All of these values should be replaced with appropriate proxies and DNS settings for a production
-environment, but production deployment is beyond the scope of this tutorial.
 
 # Start Up
 
 To start the installation, do the following:
 
 ```console
-git clone https://github.com/FIWARE/tutorials.Securing-Access.git
+git clone https://github.com/FIWARE/tutorials.Securing-Access-OpenID-Connect.git
 cd tutorials.Securing-Access
 
 ./services create
@@ -265,7 +209,7 @@ cd tutorials.Securing-Access
 > **Note** The initial creation of Docker images can take up to three minutes
 
 Thereafter, all services can be initialized from the command-line by running the
-[services](https://github.com/FIWARE/tutorials.Securing-Access/blob/master/services) Bash script provided within the
+[services](https://github.com/FIWARE/tutorials.Securing-Access-OpenID-Connect/blob/master/services) Bash script provided within the
 repository:
 
 ```console
@@ -334,6 +278,7 @@ One application, with appropriate roles and permissions has also been created:
 | ------------- | -------------------------------------- |
 | Client ID     | `tutorial-dckr-site-0000-xpresswebapp` |
 | Client Secret | `tutorial-dckr-site-0000-clientsecret` |
+| JWT Secret    | `jsonwebtokenpass`                     |
 | URL           | `http://localhost:3000`                |
 | RedirectURL   | `http://localhost:3000/login`          |
 
@@ -353,12 +298,13 @@ To refresh your memory about how to create users and organizations and applicati
 
 and look around.
 
-# OAuth2 Grant Flows
+# OIDC Flows
 
-As noted in the documentation, FIWARE **Keyrock** complies with the OAuth2 standard described in
-[RFC 6749](http://tools.ietf.org/html/rfc6749) and supports all four standard grant types defined there.
+FIWARE **Keyrock** complies with the OIDC standard described in [OpenID Connect 1.0](https://openid.net/specs/openid-connect-core-1_0.html) 
+and supports all three standard authentication flows defined there.
 
-When making requests the `Authorization` header is built by combining the application Client ID and Client Secret
+As OIDC is build on the top pf OAuth 2.0, when making requests to the OAuth Token Endpoint, 
+the `Authorization` header is built by combining the application Client ID and Client Secret
 credentials provided by the **Keyrock** separated by a `:` and base-64encoded. The value can be generated as shown:
 
 ```console
@@ -369,67 +315,65 @@ echo tutorial-dckr-site-0000-xpresswebapp:tutorial-dckr-site-0000-clientsecret |
 dHV0b3JpYWwtZGNrci1zaXRlLTAwMDAteHByZXNzd2ViYXBwOnR1dG9yaWFsLWRja3Itc2l0ZS0wMDAwLWNsaWVudHNlY3JldAo=
 ```
 
-All four major grant flows can be demonstrated within the tutorial application, the actual flow to pick will depend on
-your own use case.
+## Authorization Code Flow
 
-## User Credentials Grant
+The [Authorization Code](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth) flow can be adapted to support
+authentication mechansims. OIDC does not modify the flow of the autorization code itself but simply adds a parameter to the request
+to the Authorization endpoint as we will see below. The response returns an access-code which can be exchanged for an id_token
+which then identifies the user.
 
-The [User Gredentials](https://tools.ietf.org/html/rfc6749#section-1.3.3) grant flow, also known as the _resource owner
-password credentials grant_ or password grant should only be used when:
+![](https://fiware.github.io/tutorials.Securing-Access/img/authcode-flow.png)
 
--   A User wants to log into an application via a web-app client
--   The web-app client is absolutely trusted
+This is an example of the sort of flow used when a third party (such as Travis-CI) asks you to log in using your GitHub
+account. Travis never gains access to your password, but does receive details that you are who you claim to be from
+GitHub. 
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/user-credentials.png)
+### Authorization Code - Sample Code
 
-This is the most appropriate usage within the Supermarket Tutorial Application, as the Web-App has been written by us
-and we can trust it to pass on credentials to an instance of **Keyrock** also owned by us. As you can see from the
-diagram, the user must type their own password into the web-app client itself
+A user must first be redirected to **Keyrock**, requesting a `code`, `oa.getAuthorizeUrl()` is returning a URL of the
+form `/oauth/authorize?response_type=code&client_id={{client-id}}&state=oic&redirect_uri={{callback_url}}&scope=openid`
 
-### Logging-in with a Password
+The value "openid" is included in the scope parameter of the request to indicate to Keyrock that this is an OIDC request.
+The state value in this tutorial could be "oauth2" ans "oic". This value indicates how to manage the answers coming 
+from Keyrock
 
-#### :one: Request
-
-To log in using the user-credentials flow send a POST request to the `oauth2/token` endpoint with the
-`grant_type=password`
-
-```console
-curl -iX POST \
-  'http://localhost:3005/oauth2/token' \
-  -H 'Accept: application/json' \
-  -H 'Authorization: Basic dHV0b3JpYWwtZGNrci1zaXRlLTAwMDAteHByZXNzd2ViYXBwOnR1dG9yaWFsLWRja3Itc2l0ZS0wMDAwLWNsaWVudHNlY3JldA==' \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  --data "username=alice-the-admin@test.com&password=test&grant_type=password"
-```
-
-#### Response
-
-The response returns an `access_token` to identify the user:
-
-```json
-{
-    "access_token": "a7e22dfe2bd7d883c8621b9eb50797a7f126eeab",
-    "token_type": "Bearer",
-    "expires_in": 3599,
-    "refresh_token": "05e386edd9f95ed0e599c5004db8573e86dff874"
+```javascript
+function authCodeOICGrant(req, res) {
+    const path = oa.getAuthorizeUrl('code', 'openid', 'oic');
+    return res.redirect(path);
 }
 ```
 
-### Retrieving User Details from an Access Token
+The after the User authorizes access, the response is received by the `redirect_uri` and is handled in the code below, a
+interim access code is received from **Keyrock** and second request must be made to obtain a usable `id_token`.
 
-The access code can then be used with a GET request to the `/user` endpoint to obtain user details, for example, taking
-the `access_token` from the response above
-
-#### :two: Request
-
-```console
-curl -X GET \
-  'http://localhost:3005/user?access_token=a7e22dfe2bd7d883c8621b9eb50797a7f126eeab'
+```javascript
+function authCodeOICGrantCallback(req, res) {
+    return oa
+        .getOAuthAccessToken(req.query.code, 'authorization_code')
+        .then(results => {
+            return getUserFromIdToken(req, results.id_token);
+        })
+        .then(user => {
+            // Store user
+        })
+}
 ```
 
-#### Response
+The id_token is just a JWT that we can validate using the JWT Secret that we have preconfigured in the application through
+the envioronment variables and obtain the user information from that id_token.
 
-The username (Alice) is returned as shown:
+```javascript
+function getUserFromIdToken(req, idToken) {
+  return new Promise(function(resolve, reject) {
+    jwt.verify(idToken, jwtSecret, function(error, decoded) {
+      // Decoded --> Json with user, token and issuer information 
+    });
+  });
+}
+```
+
+The decoded json is return as shown:
 
 ```json
 {
@@ -443,106 +387,18 @@ The username (Alice) is returned as shown:
     "id": "aaaaaaaa-good-0000-0000-000000000000",
     "app_azf_domain": "",
     "username": "alice",
-    "trusted_applications": []
-}
-```
-
-### User Credentials - Sample Code
-
-The code delegates all the OAuth2 calls to a separate library
-[oauth2.js](https://github.com/FIWARE/tutorials.Step-by-Step/blob/master/context-provider/lib/oauth2.js). Every request
-includes the standard OAuth2 header and each request is wrapped in a promise to simplify the application code. The User
-Credentials flow is invoked using the `oa.getOAuthPasswordCredentials()` function - once an `access_token` is received,
-the user details are retrieved using a separate `oa.get()` call as shown:
-
-```javascript
-function userCredentialGrant(req, res) {
-    const email = req.body.email;
-    const password = req.body.password;
-
-    oa.getOAuthPasswordCredentials(email, password)
-        .then(results => {
-            logAccessToken(req, results.access_token);
-            return getUserFromAccessToken(req, results.access_token);
-        })
-        .then(user => {
-            // Store User and return
-        });
-}
-```
-
-```javascript
-function getUserFromAccessToken(req, accessToken) {
-    return new Promise(function(resolve, reject) {
-        oa.get(keyrockIPAddress + "/user", accessToken)
-            .then(response => {
-                const user = JSON.parse(response);
-                return resolve(user);
-            })
-            .catch(error => {
-                req.flash("error", "User not found");
-                return reject(error);
-            });
-    });
-}
-```
-
-### User Credentials - Running the Example
-
-It is possible to invoke the User Credentials grant flow programmatically, by bringing up the page
-`http://localhost:3000/` and filling out the username and password form.
-
-![](https://fiware.github.io/tutorials.Securing-Access/img/tutorial-log-in.png)
-
-The response displays the user on the top right of the screen, details of the token are also flashed onto the screen:
-
-![](https://fiware.github.io/tutorials.Securing-Access/img/tutorial-reponse.png)
-
-## Authorization Code Grant
-
-The [Authorization Code](https://tools.ietf.org/html/rfc6749#section-1.3.1) grant flow can be used where the client (in
-our case the Tutorial Web-application) doesn't need access to any passwords directly - it just needs to know who the
-user is. With the Authorization Code grant, the user is redirected to an Authorization Server such as **Keyrock**, logs
-in there and permits access. The response returns an access-code which can be exchanged for an access-token which then
-identifies the user.
-
-![](https://fiware.github.io/tutorials.Securing-Access/img/authcode-flow.png)
-
-This is an example of the sort of flow used when a third party (such as Travis-CI) asks you to log in using your GitHub
-account. Travis never gains access to your password, but does receive details that you are who you claim to be from
-GitHub.
-
-### Authorization Code - Sample Code
-
-A user must first be redirected to **Keyrock**, requesting a `code`, `oa.getAuthorizeUrl()` is returning a URL of the
-form `/oauth/authorize?response_type=code&client_id={{client-id}}&state=xyz&redirect_uri={{callback_url}}`
-
-```javascript
-function authCodeGrant(req, res) {
-    const path = oa.getAuthorizeUrl("code");
-    return res.redirect(path);
-}
-```
-
-The after the User authorizes access, the response is received by the `redirect_uri` and is handled in the code below, a
-interim access code is received from **Keyrock** and second request must be made to obtain a usable `access_token`.
-
-```javascript
-function authCodeGrantCallback(req, res) {
-    return oa
-        .getOAuthAccessToken(req.query.code)
-        .then(results => {
-            return getUserFromAccessToken(req, results.access_token);
-        })
-        .then(user => {
-            // Store User and return
-        });
+    "trusted_applications": [],
+    "iss": "https://fiware-idm.com",
+    "sub": "aaaaaaaa-good-0000-0000-000000000000",
+    "aud": "tutorial-dckr-site-0000-xpresswebapp",
+    "exp": 1516238462,
+    "iat": 1516239022,
 }
 ```
 
 ### Authorization Code - Running the Example
 
-It is possible to invoke the User Credentials grant flow programmatically, by bringing up the page
+It is possible to invoke the Authorization Code grant flow programmatically, by bringing up the page
 `http://localhost:3000/` and clicking on the Authorization Code Button
 
 The user is initially redirected to **Keyrock**, and must log in
@@ -553,28 +409,33 @@ The user must then authorize the request
 
 ![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-authorize.png)
 
-The response displays the user on the top right of the screen, details of the token are also flashed onto the screen.
+The response displays the user on the top right of the screen, details of the token are flashed onto the screen:
+
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/authCode-OIDC-web.png)
 
 > **Note** Unless you deliberately log out of **Keyrock** > `http://localhost:3005`, the existing **Keyrock** session
 > which has already permitted access will be used for subsequent authorization requests, so the **Keyrock** login screen
 > will not be shown again.
 
-## Implicit Grant
+## Implicit Flow
 
-The [Implicit](https://tools.ietf.org/html/rfc6749#section-1.3.2) grant flow is a simplified form of the Authorization
-grant flow where **Keyrock** returns an `access_token` directly rather than returning an interim access-code. This is
+
+The [Implicit](https://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth) flow can also be adapted to support
+authentication mechanisms. As well as in the authorization code grant, OIDC does not modify the flow but changes the response_type
+of the requests. This flow returns an `id_token` directly rather than returning an interim access-code. This is
 less secure than the Authcode flow but can be used in some client-side applications
 
 ![](https://fiware.github.io/tutorials.Securing-Access/img/implicit-flow.png)
 
-### Implicit Grant - Sample Code
+### Implicit Flow - Sample Code
 
 A user must first be redirected to **Keyrock**, requesting a `token`, `oa.getAuthorizeUrl()` is returning a URL of the
-form `/oauth/authorize?response_type=token&client_id={{client-id}}&state=xyz&redirect_uri={{callback_url}}`
+form `/oauth/authorize?response_type=id_token&client_id={{client-id}}&state=oic&redirect_uri={{callback_url}}`
+Note that to follow an OIDC flow the response type is "id_token".
 
 ```javascript
-function implicitGrant(req, res) {
-    const path = oa.getAuthorizeUrl("token");
+function implicitOICGrant(req, res) {
+    const path = oa.getAuthorizeUrl('id_token', null, 'oic');
     return res.redirect(path);
 }
 ```
@@ -583,14 +444,18 @@ The after the User authorizes access, the response is received by the `redirect_
 usable access token is received from **Keyrock**
 
 ```javascript
-function implicitGrantCallback(req, res) {
-    return getUserFromAccessToken(req, req.query.token).then(user => {
-        // Store User and return
-    });
+function implicitOICGrantCallback(req, res) {
+    return getUserFromIdToken(req, req.query.id_token)
+        .then(user => {
+          // Store User and return
+        })
 }
 ```
 
-### Implicit Grant - Running the Example
+The id_token is just a JWT that we can validate using the JWT Secret as it was explained in the autorization code section.
+
+
+### Implicit Flow - Running the Example
 
 It is possible to invoke the Implicit grant flow programmatically, by bringing up the page `http://localhost:3000/` and
 clicking on the Implicit Grant Button
@@ -603,163 +468,76 @@ The user must then authorize the request
 
 ![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-authorize.png)
 
-The response displays the user on the top right of the screen, details of the token are also flashed onto the screen.
+The response displays the user on the top right of the screen, details of the token are also flashed onto the screen:
+
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/implicit-OIDC-web.png)
 
 > **Note** Unless you deliberately log out of **Keyrock** > `http://localhost:3005`, the existing **Keyrock** session
 > which has already permitted access will be used for subsequent authorization request.
 
-## Client Credentials Grant
 
-The final grant flow - the [Client Credentials](https://tools.ietf.org/html/rfc6749#section-1.3.4) grant, does not need
-a user. It is sometimes necessary for an application to identify itself so that the application (rather than the user)
-is granted access to resources. There are no resources secured in such a manner within this tutorial, but the flow has
-been included for completeness.
+## Hybrid Flow
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/client-credentials.png)
+The [Hybrid](https://openid.net/specs/openid-connect-core-1_0.html#HybridFlowAuth) flow combines the authorization code and
+the implict grant. It could be useful to parallelize process in the Front-End and the Back-End of applications. 
+The flow is similar to the authorization code grant but in this case tokens are generated in both authorization 
+and token endpoint.
 
-### Logging in as an Application
+### Hybrid - Sample Code
 
-To log in using the client credentials flow send a POST request to the `oauth2/token` endpoint with the
-`grant_type=client_credentials`
+A user must first be redirected to **Keyrock**, requesting a `code`, `oa.getAuthorizeUrl()` is returning a URL of the
+form `/oauth/authorize?response_type=code id_token token&client_id={{client-id}}&state=oic&redirect_uri={{callback_url}}&scope=openid`
+Note that in a hybrid flow is required to include all the response_types: code, token and id_token. In the first request this will
+generate an authorization code, an access token and an id_token. If we also include the scope "openid", when using authorzation code
+previously generated, Keyrock generates a new access token and a new id_token.
 
-#### :three: Request:
-
-```console
-curl -iX POST \
-  'http://localhost:3005/oauth2/token' \
-  -H 'Accept: application/json' \
-  -H 'Authorization: Basic dHV0b3JpYWwtZGNrci1zaXRlLTAwMDAteHByZXNzd2ViYXBwOnR1dG9yaWFsLWRja3Itc2l0ZS0wMDAwLWNsaWVudHNlY3JldA==' \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  --data "grant_type=client_credentials"
-```
-
-#### Response:
-
-The response returns an access code to identify the application itself.
-
-```json
-{
-    "access_token": "3816cf24b2d233546ae9244f6f6fdc327bfba69f",
-    "token_type": "Bearer",
-    "expires_in": 3599
-}
-```
-
-### Client Credentials Grant - Sample Code
-
-The code is similar to the User Credential Grant, but without an explicit username or password.
 
 ```javascript
-function clientCredentialGrant(req, res) {
-    oa.getOAuthClientCredentials().then(results => {
-        // Store Access token
-    });
+function hybridOICGrant(req, res) {
+  const path = oa.getAuthorizeUrl('code id_token token', 'openid', 'oic');
+  return res.redirect(path);
 }
+
 ```
 
-### Client Credentials Grant - Running the Example
-
-It is possible to invoke the Client Credentials grant flow programmatically, by bringing up the page
-`http://localhost:3000/` and clicking on the Client Credentials Button
-
-The response displays the details of the token. No User is involved.
-
-## Refresh Token
-
-Once a User has identified themselves (using any appropriate grant type), they should not need to log-in again, even
-though the `access_token` they are using is time-limited. To provide continued access, an addition
-[Refresh Token](https://tools.ietf.org/html/rfc6749#section-1.5) flow has been defined, allowing a User to exchange an
-expired token for a new one. Offering this exchange is not mandatory for OAuth2 Authorization Servers, and is not
-appropriate for all grant types.
-
-### Availability Check
-
-#### :four: Request
-
-Check to see if Refresh Token flow is available, merely log in using one of the other grant types, for example to log in
-using the user-credentials flow send a POST request to the `oauth2/token` endpoint with the `grant_type=password`
-
-```console
-curl -iX POST \
-  'http://localhost:3005/oauth2/token' \
-  -H 'Accept: application/json' \
-  -H 'Authorization: Basic dHV0b3JpYWwtZGNrci1zaXRlLTAwMDAteHByZXNzd2ViYXBwOnR1dG9yaWFsLWRja3Itc2l0ZS0wMDAwLWNsaWVudHNlY3JldA==' \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  --data "username=alice-the-admin@test.com&password=test&grant_type=password"
-```
-
-#### Response
-
-Along with the `access_token` identifying the user, the response returns an `refresh_token`
-
-```json
-{
-    "access_token": "a7e22dfe2bd7d883c8621b9eb50797a7f126eeab",
-    "token_type": "Bearer",
-    "expires_in": 3599,
-    "refresh_token": "05e386edd9f95ed0e599c5004db8573e86dff874"
-}
-```
-
-### Refresh Access Token
-
-The `refresh_token=05e386edd9f95ed0e599c5004db8573e86dff874` from the response above is stored for later use. To obtain
-a new `access_token` (for example once the previous one has expired) the `refresh_token` is used in the OAuth2 refresh
-token flow and a `grant_type=refresh_token`
-
-#### :five: Request
-
-```console
-curl -iX POST \
-  'http://localhost:3005/oauth2/token' \
-  -H 'Accept: application/json' \
-  -H 'Authorization: Basic dHV0b3JpYWwtZGNrci1zaXRlLTAwMDAteHByZXNzd2ViYXBwOnR1dG9yaWFsLWRja3Itc2l0ZS0wMDAwLWNsaWVudHNlY3JldA==' \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  --data "refresh_token=05e386edd9f95ed0e599c5004db8573e86dff874&grant_type=refresh_token"
-```
-
-#### Response
-
-The response is similar to the previous response, but the `access_token` and `refresh_token` have been updated and the
-expiry window has been moved forward.
-
-```json
-{
-    "access_token": "298717d478980a2f0c3d2e9f9e222f1bb73e1c69",
-    "token_type": "Bearer",
-    "expires_in": 3599,
-    "refresh_token": "4611e3ab68b5b606eb7a43db6835de646bb7d11d"
-}
-```
-
-### Refresh Token - Sample Code
-
-The code delegates all the OAuth2 calls to a separate library
-[oauth2.js](https://github.com/FIWARE/tutorials.Step-by-Step/blob/master/context-provider/lib/oauth2.js). Every request
-includes the standard OAuth2 header and each request is wrapped in a promise to simplify the application code. The
-Request Token flow is invoked using the `oa.getOAuthRefreshToken()` function - the previously received `refresh_token`
-used to receive a new `access_token` once the previous token has expired.
+The after the User authorizes access, the response is received by the `redirect_uri` and is handled in the code below, a
+interim access code is received from **Keyrock** and second request must be made to obtain a usable `id_token`.
 
 ```javascript
-function refreshTokenGrant(req, res) {
-    return oa.getOAuthRefreshToken(req.session.refresh_token).then(results => {
-        // Store new Access Token
-    });
+function authCodeOICGrantCallback(req, res) {
+    return oa
+        .getOAuthAccessToken(req.query.code, 'hybrid')
+        .then(results => {
+            return getUserFromIdToken(req, results.id_token);
+        })
+        .then(user => {
+            // Store User and return
+        })
 }
 ```
 
-### Refresh Token - Running the Example
+The id_token is just a JWT that we can validate using the JWT Secret as it was explained in the autorization code section.
 
-It is possible to invoke the Token Refresh flow programmatically, by bringing up the page `http://localhost:3000/` and
-filling out the username and password form.
+### Hybrid - Running the Example
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/tutorial-log-in.png)
+It is possible to invoke the Hybrid  flow programmatically, by bringing up the page
+`http://localhost:3000/` and clicking on the Authorization Code Button
 
-The response displays the user on the top right of the screen, details of the token are also flashed onto the screen:
+The user is initially redirected to **Keyrock**, and must log in
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/tutorial-reponse.png)
+![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-log-in.png)
 
-Pressing the **Refresh Token** button invokes returns a new `access_token` and `refresh_token` for the logged in user.
+The user must then authorize the request
+
+![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-authorize.png)
+
+The response displays the user on the top right of the screen, details of the token are flashed onto the screen:
+
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/hybrid-OIDC-web.png)
+
+> **Note** Unless you deliberately log out of **Keyrock** > `http://localhost:3005`, the existing **Keyrock** session
+> which has already permitted access will be used for subsequent authorization requests, so the **Keyrock** login screen
+> will not be shown again.
 
 ## License
 
