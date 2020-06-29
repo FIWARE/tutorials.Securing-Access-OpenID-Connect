@@ -7,12 +7,6 @@
 
 This tutorial complements the previous [Securing Access tutorial](https://github.com/FIWARE/tutorials.Securing-Access). This tutorial also secures access to a FIWARE application but using various OpenID Connect flows to authenticate users.
 
-The tutorial discusses code showing how to integrate Keyrock within a web application and demonstrates examples of
-Authorization Server interactions using the **Keyrock** GUI. Some [cUrl](https://ec.haxx.se/) commands are also used to
-access the **Keyrock** REST API - [Postman documentation](https://fiware.github.io/tutorials.Securing-Access/) is also
-available.
-
-[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/66d8ba3abaf7319941b1)
 
 -   このチュートリアルは[日本語](README.ja.md)でもご覧いただけます。
 
