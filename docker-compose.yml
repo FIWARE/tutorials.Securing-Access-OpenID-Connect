@@ -82,6 +82,7 @@ services:
       - "TWITTER_CONSUMER_SECRET=<ADD_YOUR_CONSUMER_SECRET>"
       - "NGSI_LD_PREFIX="
       - "SECURE_ENDPOINTS=true"
+      - "OIDC_ENABLED=true"
       - "KEYROCK_URL=http://localhost"
       - "KEYROCK_IP_ADDRESS=http://172.18.1.5"
       - "KEYROCK_PORT=${KEYROCK_PORT}"

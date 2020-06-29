@@ -166,6 +166,8 @@ tutorial:
         - "3001:3001"
     environment:
         - "DEBUG=tutorial:*"
+        - "SECURE_ENDPOINTS=true"
+        - "OIDC_ENABLED=true"
         - "WEB_APP_PORT=3000"
         - "KEYROCK_URL=http://localhost"
         - "KEYROCK_IP_ADDRESS=http://172.18.1.5"
@@ -187,6 +189,7 @@ The `tutorial` container is driven by environment variables as shown:
 | Key                   | Value                                  | Description                                                                                    |
 | --------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | DEBUG                 | `tutorial:*`                           | Debug flag used for logging                                                                    |
+| OIDC_ENABLED          | `true`                                 | Enable OpenID Connect in the tutorial                                                          |
 | KEYROCK_CLIENT_ID     | `tutorial-dckr-site-0000-xpresswebapp` | The Client ID defined by Keyrock for this application                                          |
 | KEYROCK_CLIENT_SECRET | `tutorial-dckr-site-0000-clientsecret` | The Client Secret defined by Keyrock for this application                                      |
 | KEYROCK_JWT_SECRET    | `jsonwebtokenpass`                     | The JWT Secret defined by Keyrock for this application to validate id_tokens                   |
