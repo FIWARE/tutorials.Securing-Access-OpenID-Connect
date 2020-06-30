@@ -1,4 +1,4 @@
-[![FIWARE Banner](https://fiware.github.io/tutorials.Securing-Access/img/fiware.png)](https://www.fiware.org/developers)
+[![FIWARE Banner](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/fiware.png)](https://www.fiware.org/developers)
 
 [![FIWARE Security](https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/security.svg)](https://github.com/FIWARE/catalogue/blob/master/security/README.md)
 [![License: MIT](https://img.shields.io/github/license/fiware/tutorials.Securing-Access.svg)](https://opensource.org/licenses/MIT)
@@ -115,7 +115,7 @@ This application adds OIDC-driven security into the existing Stock Management an
 [previous tutorials](https://github.com/FIWARE/tutorials.IoT-Agent/) by using the data created in the first
 [security tutorial](https://github.com/FIWARE/tutorials.Identity-Management/) and reading it programmatically. It will
 make use of one FIWARE component - the [Keyrock](https://fiware-idm.readthedocs.io/en/latest/) Generic enabler. **Keyrock**
-uses its own [MySQL](https://www.mysql.com/) database. This tutorial only focus on granting JWT by the use of OIDC. 
+uses its own [MySQL](https://www.mysql.com/) database. This tutorial only focus on granting JWT by the use of OIDC.
 You can practice using the tokens to securely access sensor information in the tutorial [Securing Access tutorial](https://github.com/FIWARE/tutorials.Securing-Access).
 
 Therefore the overall architecture will consist of the following elements:
@@ -286,21 +286,21 @@ again.
 
 The **Keyrock** MySQL database deals with all aspects of application security including storing users, password etc;
 defining access rights and dealing with OAuth2 authorization protocols. The complete database relationship diagram can
-be found [here](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-db.png)
+be found [here](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/keyrock-db.png)
 
 To refresh your memory about how to create users and organizations and applications, you can log in at
 `http://localhost:3005/idm` using the account `alice-the-admin@test.com` with a password of `test`.
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-log-in.png)
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/keyrock-log-in.png)
 
 and look around.
 
 # OIDC Flows
 
-FIWARE **Keyrock** complies with the OIDC standard described in [OpenID Connect 1.0](https://openid.net/specs/openid-connect-core-1_0.html) 
+FIWARE **Keyrock** complies with the OIDC standard described in [OpenID Connect 1.0](https://openid.net/specs/openid-connect-core-1_0.html)
 and supports all three standard authentication flows defined there.
 
-As OIDC is build on the top pf OAuth 2.0, when making requests to the OAuth Token Endpoint, 
+As OIDC is build on the top pf OAuth 2.0, when making requests to the OAuth Token Endpoint,
 the `Authorization` header is built by combining the application Client ID and Client Secret
 credentials provided by the **Keyrock** separated by a `:` and base-64encoded. The value can be generated as shown:
 
@@ -319,11 +319,11 @@ authentication mechansims. OIDC does not modify the flow of the autorization cod
 to the Authorization endpoint as we will see below. The response returns an access-code which can be exchanged for an id_token
 which then identifies the user.
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/authcode-flow.png)
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/authcode-flow.png)
 
 This is an example of the sort of flow used when a third party (such as Travis-CI) asks you to log in using your GitHub
 account. Travis never gains access to your password, but does receive details that you are who you claim to be from
-GitHub. 
+GitHub.
 
 ### Authorization Code - Sample Code
 
@@ -331,7 +331,7 @@ A user must first be redirected to **Keyrock**, requesting a `code`, `oa.getAuth
 form `/oauth/authorize?response_type=code&client_id={{client-id}}&state=oic&redirect_uri={{callback_url}}&scope=openid`
 
 The value "openid" is included in the scope parameter of the request to indicate to Keyrock that this is an OIDC request.
-The state value in this tutorial could be "oauth2" ans "oic". This value indicates how to manage the answers coming 
+The state value in this tutorial could be "oauth2" ans "oic". This value indicates how to manage the answers coming
 from Keyrock
 
 ```javascript
@@ -364,7 +364,7 @@ the envioronment variables and obtain the user information from that id_token.
 function getUserFromIdToken(req, idToken) {
   return new Promise(function(resolve, reject) {
     jwt.verify(idToken, jwtSecret, function(error, decoded) {
-      // Decoded --> Json with user, token and issuer information 
+      // Decoded --> Json with user, token and issuer information
     });
   });
 }
@@ -400,11 +400,11 @@ It is possible to invoke the Authorization Code grant flow programmatically, by 
 
 The user is initially redirected to **Keyrock**, and must log in
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-log-in.png)
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/keyrock-log-in.png)
 
 The user must then authorize the request
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-authorize.png)
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/keyrock-authorize.png)
 
 The response displays the user on the top right of the screen, details of the token are flashed onto the screen:
 
@@ -422,7 +422,7 @@ authentication mechanisms. As well as in the authorization code grant, OIDC does
 of the requests. This flow returns an `id_token` directly rather than returning an interim access-code. This is
 less secure than the Authcode flow but can be used in some client-side applications
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/implicit-flow.png)
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/implicit-flow.png)
 
 ### Implicit Flow - Sample Code
 
@@ -459,11 +459,11 @@ clicking on the Implicit Grant Button
 
 The user is initially redirected to **Keyrock**, and must log in
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-log-in.png)
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/keyrock-log-in.png)
 
 The user must then authorize the request
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-authorize.png)
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/keyrock-authorize.png)
 
 The response displays the user on the top right of the screen, details of the token are also flashed onto the screen:
 
@@ -476,8 +476,8 @@ The response displays the user on the top right of the screen, details of the to
 ## Hybrid Flow
 
 The [Hybrid](https://openid.net/specs/openid-connect-core-1_0.html#HybridFlowAuth) flow combines the authorization code and
-the implict grant. It could be useful to parallelize process in the Front-End and the Back-End of applications. 
-The flow is similar to the authorization code grant but in this case tokens are generated in both authorization 
+the implict grant. It could be useful to parallelize process in the Front-End and the Back-End of applications.
+The flow is similar to the authorization code grant but in this case tokens are generated in both authorization
 and token endpoint.
 
 ### Hybrid - Sample Code
@@ -522,11 +522,11 @@ It is possible to invoke the Hybrid  flow programmatically, by bringing up the p
 
 The user is initially redirected to **Keyrock**, and must log in
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-log-in.png)
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/keyrock-log-in.png)
 
 The user must then authorize the request
 
-![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-authorize.png)
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/keyrock-authorize.png)
 
 The response displays the user on the top right of the screen, details of the token are flashed onto the screen:
 
@@ -538,4 +538,4 @@ The response displays the user on the top right of the screen, details of the to
 
 ## License
 
-[MIT](LICENSE) © 2018-2020 FIWARE Foundation e.V.
+[MIT](LICENSE) © 2020 FIWARE Foundation e.V.
