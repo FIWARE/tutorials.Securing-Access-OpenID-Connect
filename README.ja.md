@@ -6,69 +6,83 @@
 <br/>
 [![Documentation](https://img.shields.io/readthedocs/fiware-tutorials.svg)](https://fiware-tutorials.rtfd.io)
 
-This tutorial complements the previous [Securing Access tutorial](https://github.com/FIWARE/tutorials.Securing-Access). This tutorial also secures access to a FIWARE application but using various OpenID Connect flows to authenticate users.
+このチュートリアルは、以前の
+[セキュリティで保護されたアクセスのチュートリアル](https://github.com/FIWARE/tutorials.Securing-Access)
+を補足するものです。このチュートリアルでは、FIWARE アプリケーションへのアクセスも保護しますが、さまざまな
+OpenID Connect フローを使用してユーザを認証します。
 
-
--   このチュートリアルは[日本語](README.ja.md)でもご覧いただけます。
-
-## Contents
+## コンテンツ 
 
 <details>
-<summary><strong>Details</strong></summary>
+<summary><strong>詳細</strong></summary>
 
--   [Authenticating Identities](#authenticating-identities)
-    -   [Standard Concepts of Json Web Tokens](#standard-concepts-of-json-web-tokens)
--   [Prerequisites](#prerequisites)
+-   [認証 ID](#authenticating-identities)
+    -   [Json Web Tokens の標準概念](#standard-concepts-of-json-web-tokens)
+-   [前提条件](#prerequisites)
     -   [Docker](#docker)
     -   [Cygwin](#cygwin)
--   [Architecture](#architecture)
-    -   [Tutorial Security Configuration](#tutorial-security-configuration)
--   [Start Up](#start-up)
-    -   [Dramatis Personae](#dramatis-personae)
--   [OIDC Flows](#oidc-flows)
-    -   [Authorization Code Flow](#authorization-code-flow)
-        -   [Authorization Code - Sample Code](#authorization-code---sample-code)
-        -   [Authorization Code - Running the Example](#authorization-code---running-the-example)
-    -   [Implicit Flow](#implicit-flow)
-        -   [Implicit Flow - Sample Code](#implicit-flow---sample-code)
-        -   [Implicit Flow - Running the Example](#implicit-flow---running-the-example)
-    -   [Hybrid Flow](#hybrid-flow)
-        -   [Hybrid - Sample Code](#authorization-code---sample-code)
-        -   [Hybrid - Running the Example](#authorization-code---running-the-example)
-
+-   [アーキテクチャ](#architecture)
+    -   [チュートリアルのセキュリティ設定](#tutorial-security-configuration)
+-   [起動](#start-up)
+    -   [登場人物 (Dramatis Personae)](#dramatis-personae)
+-   [OIDC フロー](#oidc-flows)
+    -   [認可コード・フロー (Authorization Code Flow)](#authorization-code-flow)
+        -   [認可コード - サンプル・コード](#authorization-code---sample-code)
+        -   [認可コード - サンプルの実行](#authorization-code---running-the-example)
+    -   [暗黙フロー](#implicit-flow)
+        -   [暗黙フロー - サンプル・コード](#implicit-flow---sample-code)
+        -   [暗黙フロー - サンプルの実行](#implicit-flow---running-the-example)
+    -   [ハイブリッド・フロー](#hybrid-flow)
+        -   [ハイブリッド - サンプル・コード](#authorization-code---sample-code)
+        -   [ハイブリッド - サンプルの実行](#authorization-code---running-the-example)
 
 </details>
 
-# Authenticating Identities
+<a name="authenticating-identities"/>
+
+# 認証 ID (Authenticating Identities)
 
 > "Yes, your home is your castle, but it is also your identity
 > and your possibility to be open to others.
 >
 > — David Soul
 
-Digital identities represent both the characteristics of people and the actions they carry out on the Internet. In order to secure an application it is necessary to authenticate that the identity is really who it says it is. In addition to OAuth 2.0, the FIWARE **Keyrock** generic enabler supports [OpenID Connect](https://openid.net/connect/) (OIDC) to enable third-party applications to authenticate users. **OpenID Connect** is a simple identity layer on top of the OAuth 2.0 protocol. It enables to verify the identity of users and to obtain a basic profile about these users by using [Json Web Tokens](https://jwt.io/).
+デジタル ID (Digital identities) は、人々の特性とインターネット上で実行されるアクションの両方を表します。
+アプリケーションを保護するためには、ID が本当に本人であることを認証する必要があります。FIWARE **Keyrock**
+generic enabler は OAuth 2.0 に加えて、[OpenID Connect](https://openid.net/connect/) (OIDC) をサポートし、
+サードパーティ・アプリケーションがユーザを認証できるようにします。**OpenID Connect** は、OAuth 2.0 プロトコルの上に
+あるシンプルな ID レイヤです。[Json Web Tokens](https://jwt.io/) を使用して、ユーザの身元を確認し、
+これらのユーザに関する基本的なプロファイルを取得できます。
 
-The OpenID Connect flows are build on the top of these three OAuth 2.0 grant flows:
+OpenID Connect フローは、次の3つの OAuth 2.0 グラント・フローの上に構築されています:
 
--   [Authorization Code](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth)
--   [Implicit](https://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth)
--   [Hybrid](https://openid.net/specs/openid-connect-core-1_0.html#HybridFlowAuth)
+-   [認可コード (Authorization Code)](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth)
+-   [暗黙 (Implicit)](https://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth)
+-   [ハイブリッド (Hybrid)](https://openid.net/specs/openid-connect-core-1_0.html#HybridFlowAuth)
 
+認可 (Authorization) と認証 (Authentication) は2つのまったく異なるものです。1つ目は特定のデータへのアクセスを
+許可または禁止し、2つ目はサイン・インについてです。OAuth2.0 は認可プロセスを有効にしますが、ユーザを識別および
+認証する方法がありません。OIDC は、OAuth 2.0 認証の問題を解決するために作成されました。OAuth 2.0 と OIDC
+は、ユーザ名とパスワードの公開を避けてユーザを識別するトークンを生成します。特に、OIDC は Json Web Token (JWT)
+を生成します。これは、アプリケーションが本質的にそれ自体からユーザ情報を検証して直接取得できるものです。
 
-Authorization and authentication are two completely different things. The first one allows or not to access certain data while the second one is about sign in. OAuth 2.0 enables authorization processes but it lacks ways to identify and authenticate users. OIDC was created to solve OAuth 2.0 authentication issue. Either OAuth 2.0 and OIDC generate a token that identifies the user avoiding exposing the username and password. Particularly, OIDC generates a Json Web Token (JWT) that applications can intrinsically  validate and obtain user information directly from itself.
+<a name="standard-concepts-of-json-web-tokens"/>
 
-## Standard Concepts of Json Web Tokens
+## Json Web Tokens の標準概念
 
-A JWT has the follofing structure:
+JWT の構造は次のとおりです:
 
--   Header. It identifies the algorithm used to sign the Json Web Token.
+-   ヘッダー。これは Json Web Token の署名に使用されるアルゴリズムを識別します。
+
 ```json
 {
   "alg": "HS256",
   "typ": "JWT"
 }
 ```
--   Payload. It contains user data, as well as information on when the token was created and who created it.
+
+-   ペイロード。トークンが作成された時期と作成者に関する情報だけでなく、ユーザ・データも含まれています。
+
 ```json
 {
   "sub": "1234567890",
@@ -78,72 +92,92 @@ A JWT has the follofing structure:
   "gravatar": true
 }
 ```
--   Signature. It is generated as follows:
+
+-   署名 (Signature)。次のように生成されます:
+
 ```
 Crypto-Algorithm ( base64urlEncoding(header) + '.' + base64urlEncoding(payload), secret)
 ```
 
-The JWT is the result of enconding each part using Base64 and concatenating them with points. For instance:
+JWT は、Base64 を使用して各部分をエンコードし、それらをポイント (.) で連結した結果です。例えば：
+
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiaHR0cHM6Ly9maXdhcmUtaWRtLmNvbSIsImlhdCI6MTUxNjIzOTAyMiwidXNlcm5hbWUiOiJBbGljZSIsImdyYXZhdGFyIjp0cnVlfQ.dZ7z0u_4FZC7xiVQDtGAl7NRT0fK8_5hJqYa9E-4xGE
 ```
 
-# Prerequisites
+<a name="prerequisites"/>
+
+# 前提条件
+
+<a name="docker"/>
 
 ## Docker
 
-To keep things simple both components will be run using [Docker](https://www.docker.com). **Docker** is a container
-technology which allows to different components isolated into their respective environments.
+物事を単純にするために、両方のコンポーネントが [Docker](https://www.docker.com) を使用して実行されます。**Docker**
+は、さまざまコンポーネントをそれぞれの環境に分離することを可能にするコンテナ・テクノロジです。
 
--   To install Docker on Windows follow the instructions [here](https://docs.docker.com/docker-for-windows/)
--   To install Docker on Mac follow the instructions [here](https://docs.docker.com/docker-for-mac/)
--   To install Docker on Linux follow the instructions [here](https://docs.docker.com/install/)
+-   Docker Windows にインストールするには、
+    [こちら](https://docs.docker.com/docker-for-windows/)の手順に従ってください
+-   Docker Mac にインストールするには、
+    [こちら](https://docs.docker.com/docker-for-mac/)の手順に従ってください
+-   Docker Linux にインストールするには、
+    [こちら](https://docs.docker.com/install/)の手順に従ってください
 
-**Docker Compose** is a tool for defining and running multi-container Docker applications. A
-[YAML file](https://raw.githubusercontent.com/Fiware/tutorials.Identity-Management/master/docker-compose.yml) is used
-configure the required services for the application. This means all container services can be brought up in a single
-command. Docker Compose is installed by default as part of Docker for Windows and Docker for Mac, however Linux users
-will need to follow the instructions found [here](https://docs.docker.com/compose/install/)
+**Docker Compose** は、マルチコンテナ Docker アプリケーションを定義して実行するためのツールです。
+[YAML file](https://raw.githubusercontent.com/Fiware/tutorials.Securing-Access-OpenID-Connect/master/docker-compose.yml)
+ファイルは、アプリケーションのために必要なサービスを構成するために使用します。つまり、すべてのコンテナ・サービスは
+1つのコマンドで呼び出すことができます。Docker Compose は、デフォルトで Docker for Windows と Docker for Mac の一部と
+してインストールされますが、Linux ユーザは[ここ](https://docs.docker.com/compose/install/)に記載されている手順に従う
+必要があります。
+
+<a name="cygwin"/>
 
 ## Cygwin
 
-We will start up our services using a simple bash script. Windows users should download [cygwin](http://www.cygwin.com/)
-to provide a command-line functionality similar to a Linux distribution on Windows.
+シンプルな bash スクリプトを使用してサービスを開始します。Windows ユーザは [cygwin](http://www.cygwin.com/) を
+ダウンロードして、Windows 上の Linux ディストリビューションと同様のコマンドライン機能を提供する必要があります。
 
-# Architecture
+<a name="architecture"/>
 
-This application adds OIDC-driven security into the existing Stock Management and Sensors-based application created in
-[previous tutorials](https://github.com/FIWARE/tutorials.IoT-Agent/) by using the data created in the first
-[security tutorial](https://github.com/FIWARE/tutorials.Identity-Management/) and reading it programmatically. It will
-make use of one FIWARE component - the [Keyrock](https://fiware-idm.readthedocs.io/en/latest/) Generic enabler. **Keyrock**
-uses its own [MySQL](https://www.mysql.com/) database. This tutorial only focus on granting JWT by the use of OIDC. 
-You can practice using the tokens to securely access sensor information in the tutorial [Securing Access tutorial](https://github.com/FIWARE/tutorials.Securing-Access).
+# アーキテクチャ
 
-Therefore the overall architecture will consist of the following elements:
+このアプリケーションは、最初の[セキュリティ・チュートリアル](https://github.com/FIWARE/tutorials.Identity-Management/)
+で作成されたデータを使用してプログラムで読み取ることにより、
+[以前のチュートリアル](https://github.com/FIWARE/tutorials.Identity-Management/)で作成された既存の在庫管理および
+センサ・ベースのアプリケーションに OIDC ドリブンのセキュリティを追加します。これは、1つの FIWARE コンポーネント -
+[Keyrock](https://fiware-idm.readthedocs.io/en/latest/) Generic enabler を使用します。**Keyrock** は独自の
+[MySQL](https://www.mysql.com/) データベースを使用します。 このチュートリアルでは、OIDC を使用して JWT
+を付与することにのみ焦点を当てています。
+[セキュリティで保護されたアクセスのチュートリアル](https://github.com/FIWARE/tutorials.Securing-Access)
+では、トークンを使用してセンサ情報に安全にアクセスする方法を学習できます。
 
--   FIWARE [Keyrock](https://fiware-idm.readthedocs.io/en/latest/) offer a complement Identity Management System
-    including:
-    -   An OAuth2 authorization system for Applications and Users
-    -   An OIDC authentication system for Applications and Users
-    -   A site graphical frontend for Identity Management Administration
-    -   An equivalent REST API for Identity Management via HTTP requests
--   A [MySQL](https://www.mysql.com/) database :
-    -   Used to persist user identities, applications, roles and permissions
--   The **Stock Management Frontend** does the following:
-    -   Displays store information
-    -   Shows which products can be bought at each store
-    -   Allows users to "buy" products and reduce the stock count.
-    -   Allows authorized users into restricted areas
+したがって、全体的なアーキテクチャは次の要素で構成されます:
 
-Since all interactions between the elements are initiated by HTTP requests, the entities can be containerized and run
-from exposed ports.
+-   FIWARE [Keyrock](https://fiware-idm.readthedocs.io/en/latest/) は、以下を含んだ、補完的な ID 管理システムを
+    提供します:
+    -   アプリケーションとユーザのための OAuth2 認可システム
+    -   アプリケーションとユーザのための OIDC 認証システム
+    -   ID 管理のための Web サイトのグラフィカル・フロントエンド
+    -   HTTP リクエストによる ID 管理用の同等の REST API
+-   [MySQL](https://www.mysql.com/) データベース :
+    -   ユーザ ID、アプリケーション、ロール、および権限を保持するために使用されます
+-   **在庫管理フロントエンド**には、次のことを行います:
+    -   店舗情報を表示します
+    -   各店舗でどの商品を購入できるかを示します
+    -   ユーザが製品を"購入"して在庫数を減らすことができます
+    -   許可されたユーザを制限されたエリアに入れることができます
+
+要素間のすべての対話は HTTP リクエストによって開始されるため、エンティティはコンテナ化され、公開されたポートから実行
+されます。
 
 ![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/architecture.png)
 
-The necessary configuration information for adding security to the **Stock Management Frontend** can be found in the
-`tutorial` section of the associated `docker-compose.yml` file - only the relevant variables are shown below:
+**在庫管理フロントエンド**にセキュリティを追加するために必要な設定情報は、関連する `docker-compose.yml` ファイルの
+`tutorial` セクションにあります。関連する変数を以下に示します。
 
-## Tutorial Security Configuration
+<a name="tutorial-security-configuration"/>
+
+## チュートリアルのセキュリティ設定
 
 ```yaml
 tutorial:
@@ -173,104 +207,107 @@ tutorial:
         - "CALLBACK_URL=http://localhost:3000/login"
 ```
 
-The `tutorial` container is listening on two ports:
+`tutorial` コンテナは、2 つのポートでリッスンしています :
 
--   Port `3000` is exposed so we can see the web page displaying the Dummy IoT devices.
--   Port `3001` is exposed purely for tutorial access - so that cUrl or Postman can make UltraLight commands without
-    being part of the same network.
+-   ポート `3000` が公開されているので、ダミー IoT デバイスを表示する Web ページが表示されます
+-   ポート `3001` は純粋にチュートリアルアクセスのために公開されているため、cUrl または Postman は同じネットワークの
+    一部ではなくても、UltraLight コマンドを作成できます
 
-The `tutorial` container is driven by environment variables as shown:
+`tutorial` コンテナは、次に示すように環境変数によってドライブされます:
 
-| Key                   | Value                                  | Description                                                                                    |
+| キー                  | 値                                     | 説明                                                                                           |
 | --------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| DEBUG                 | `tutorial:*`                           | Debug flag used for logging                                                                    |
-| OIDC_ENABLED          | `true`                                 | Enable OpenID Connect in the tutorial                                                          |
-| KEYROCK_CLIENT_ID     | `tutorial-dckr-site-0000-xpresswebapp` | The Client ID defined by Keyrock for this application                                          |
-| KEYROCK_CLIENT_SECRET | `tutorial-dckr-site-0000-clientsecret` | The Client Secret defined by Keyrock for this application                                      |
-| KEYROCK_JWT_SECRET    | `jsonwebtokenpass`                     | The JWT Secret defined by Keyrock for this application to validate id_tokens                   |
-| CALLBACK_URL          | `http://localhost:3000/login`          | The callback URL used by Keyrock when a challenge has succeeded.                               |
+| DEBUG                 | `tutorial:*`                           | ロギングに使用されるデバッグ・フラグ                                                           |
+| OIDC_ENABLED          | `true`                                 | チュートリアルでOpenID Connectを有効化                                                         |
+| KEYROCK_CLIENT_ID     | `tutorial-dckr-site-0000-xpresswebapp` | このアプリケーションで Keyrock によって定義された、Client ID                                   |
+| KEYROCK_CLIENT_SECRET | `tutorial-dckr-site-0000-clientsecret` | このアプリケーションで Keyrock によって定義された、Client Secret                               |
+| KEYROCK_JWT_SECRET    | `jsonwebtokenpass`                     | このアプリケーションが id_tokens を検証するために Keyrock によって定義された JWT Secret        |
+| CALLBACK_URL          | `http://localhost:3000/login`          | チャレンジが成功したときに Keyrock が使用するコールバック URL                                  |
 
-The other `tutorial` container configuration values described in the YAML file have been described in previous tutorials
+YAML ファイルに記述されている、他の `tutorial`コンテナの設定値は、以前のチュートリアルで説明しています
 
+<a name="start-up"/>
 
-# Start Up
+# 起動
 
-To start the installation, do the following:
+インストールを開始するには、次の手順を実行します:
 
 ```console
 git clone https://github.com/FIWARE/tutorials.Securing-Access-OpenID-Connect.git
-cd tutorials.Securing-Access
+cd tutorials.Securing-Access-OpenID-Connect
 
 ./services create
 ```
 
-> **Note** The initial creation of Docker images can take up to three minutes
+> **注** Docker イメージの最初の作成には最大 3 分かかります
 
-Thereafter, all services can be initialized from the command-line by running the
-[services](https://github.com/FIWARE/tutorials.Securing-Access-OpenID-Connect/blob/master/services) Bash script provided within the
-repository:
+その後、リポジトリ内で提供される
+[services](https://github.com/FIWARE/tutorials.Securing-Access-OpenID-Connect/blob/master/services) Bash
+スクリプトを実行することによって、コマンドラインからすべてのサービスを初期化することができます:
 
 ```console
 ./services <command>
 ```
 
-Where `<command>` will vary depending upon the exercise we wish to activate.
+ここで、`<command>` は、私たちがアクティベートしたいエクササイズに応じて変わります。
 
-> :information_source: **Note:** If you want to clean up and start over again you can do so with the following command:
+> :information_source: **注:** クリーンアップをやり直したい場合は、次のコマンドを使用して再起動することができます:
 >
 > ```console
 > ./services stop
 > ```
 
-### Dramatis Personae
+<a name="dramatis-personae"/>
 
-The following people at `test.com` legitimately have accounts within the Application
+### 登場人物 (Dramatis Personae)
 
--   Alice, she will be the Administrator of the **Keyrock** Application
--   Bob, the Regional Manager of the supermarket chain - he has several store managers under him:
-    -   Manager1
-    -   Manager2
--   Charlie, the Head of Security of the supermarket chain - he has several store detectives under him:
-    -   Detective1
-    -   Detective2
+次の `test.com` のメンバは、合法的にアプリケーション内にアカウントを持っています
 
-The following people at `example.com` have signed up for accounts, but have no reason to be granted access
+-   Alice, **Keyrock** アプリケーションの管理者です
+-   Bob, スーパー・マーケット・チェーンの地域マネージャで、数人のマネージャがいます :
+    -   Manager1 (マネージャ 1)
+    -   Manager2 (マネージャ 2)
+-   Charlie, スーパー・マーケット・チェーンのセキュリティ責任者。彼の下に数人の警備員がいます :
+    -   Detective1 (警備員 1)
+    -   Detective2 (警備員 2)
 
--   Eve - Eve the Eavesdropper
--   Mallory - Mallory the malicious attacker
--   Rob - Rob the Robber
+次の`example.com` のメンバはアカウントにサインアップしましたが、アクセスを許可する理由はありません
+
+-   Eve - 盗聴者のイブ
+-   Mallory - 悪意のある攻撃者のマロリー
+-   Rob - 強盗のロブ
 
 <details>
   <summary>
-   For more details <b>(Click to expand)</b>
+   詳細 <b>(クリックして拡大)</b>
   </summary>
 
-| Name       | eMail                     | Password |
-| ---------- | ------------------------- | -------- |
-| alice      | alice-the-admin@test.com  | `test`   |
-| bob        | bob-the-manager@test.com  | `test`   |
-| charlie    | charlie-security@test.com | `test`   |
-| manager1   | manager1@test.com         | `test`   |
-| manager2   | manager2@test.com         | `test`   |
-| detective1 | detective1@test.com       | `test`   |
-| detective2 | detective2@test.com       | `test`   |
+| 名前       | E メール                  | パスワード |
+| ---------- | ------------------------- | ---------- |
+| alice      | alice-the-admin@test.com  | `test`     |
+| bob        | bob-the-manager@test.com  | `test`     |
+| charlie    | charlie-security@test.com | `test`     |
+| manager1   | manager1@test.com         | `test`     |
+| manager2   | manager2@test.com         | `test`     |
+| detective1 | detective1@test.com       | `test`     |
+| detective2 | detective2@test.com       | `test`     |
 
-| Name    | eMail               | Password |
-| ------- | ------------------- | -------- |
-| eve     | eve@example.com     | `test`   |
-| mallory | mallory@example.com | `test`   |
-| rob     | rob@example.com     | `test`   |
+| 名前    | E メール            | パスワード |
+| ------- | ------------------- | ---------- |
+| eve     | eve@example.com     | `test`     |
+| mallory | mallory@example.com | `test`     |
+| rob     | rob@example.com     | `test`     |
 
 </details>
 
-Two organizations have also been set up by Alice:
+Alice によって 2 つの組織 (organizations) が設定されました:
 
-| Name       | Description                         | UUID                                   |
+| 名前       | 説明                                | UUID                                   |
 | ---------- | ----------------------------------- | -------------------------------------- |
 | Security   | Security Group for Store Detectives | `security-team-0000-0000-000000000000` |
 | Management | Management Group for Store Managers | `managers-team-0000-0000-000000000000` |
 
-One application, with appropriate roles and permissions has also been created:
+適切なロールと権限を持つ 1 つのアプリケーション も作成されました:
 
 | Key           | Value                                  |
 | ------------- | -------------------------------------- |
@@ -280,30 +317,33 @@ One application, with appropriate roles and permissions has also been created:
 | URL           | `http://localhost:3000`                |
 | RedirectURL   | `http://localhost:3000/login`          |
 
-To save time, the data creating users and organizations from the
-[previous tutorial](https://github.com/FIWARE/tutorials.Roles-Permissions) has been downloaded and is automatically
-persisted to the MySQL database on start-up so the assigned UUIDs do not change and the data does not need to be entered
-again.
+時間を節約するために、
+[以前のチュートリアル](https://github.com/FIWARE/tutorials.Roles-Permissions)の users と organizations を作成する
+データがダウンロードされ、起動時に自動的に MySQL データベースに保存されるため、割り当てられた UUIDs は変更されず、
+データを再度入力する必要もありません。
 
-The **Keyrock** MySQL database deals with all aspects of application security including storing users, password etc;
-defining access rights and dealing with OAuth2 authorization protocols. The complete database relationship diagram can
-be found [here](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-db.png)
+**Keyrock** MySQL データベースは、ユーザ、パスワードなどの格納を含むアプリケーション・セキュリティのあらゆる側面を
+扱います。アクセス権を定義し、OAuth2 認証プロトコルを扱います。完全なデータベース関係図は
+[ここ](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-db.png)にあります。
 
-To refresh your memory about how to create users and organizations and applications, you can log in at
-`http://localhost:3005/idm` using the account `alice-the-admin@test.com` with a password of `test`.
+ユーザ (users) や組織 (organizations)、アプリケーション (applications) を作成する方法について思い出すには、
+アカウント `alice-the-admin@test.com` と パスワード `test` を使用して、`http://localhost:3005/idm`
+にログインします。
 
 ![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-log-in.png)
 
-and look around.
+そして、周りを見回してください。
 
-# OIDC Flows
+<a name="oidc-flows"/>
 
-FIWARE **Keyrock** complies with the OIDC standard described in [OpenID Connect 1.0](https://openid.net/specs/openid-connect-core-1_0.html) 
-and supports all three standard authentication flows defined there.
+# OIDC フロー (OIDC Flows)
 
-As OIDC is build on the top pf OAuth 2.0, when making requests to the OAuth Token Endpoint, 
-the `Authorization` header is built by combining the application Client ID and Client Secret
-credentials provided by the **Keyrock** separated by a `:` and base-64encoded. The value can be generated as shown:
+FIWARE **Keyrock** は、[OpenID Connect 1.0](https://openid.net/specs/openid-connect-core-1_0.html)
+で説明されている OIDC 標準に準拠しています。そこで定義されている3つの標準認証フローすべてをサポートします。
+
+OIDC は OAuth 2.0 の最上位に構築されているため、OAuth トークン・エンドポイントにリクエストを送信すると、
+`Authorization` ヘッダは、**Keyrock** によって提供されるアプリケーションの Client ID と Client Secret
+の認証情報を `:` で区切り、Base64 でエンコードして作成されます。 値は次のように生成できます:
 
 ```console
 echo tutorial-dckr-site-0000-xpresswebapp:tutorial-dckr-site-0000-clientsecret | base64
@@ -313,27 +353,32 @@ echo tutorial-dckr-site-0000-xpresswebapp:tutorial-dckr-site-0000-clientsecret |
 dHV0b3JpYWwtZGNrci1zaXRlLTAwMDAteHByZXNzd2ViYXBwOnR1dG9yaWFsLWRja3Itc2l0ZS0wMDAwLWNsaWVudHNlY3JldAo=
 ```
 
-## Authorization Code Flow
+<a name="authorization-code-flow"/>
 
-The [Authorization Code](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth) flow can be adapted to support
-authentication mechansims. OIDC does not modify the flow of the autorization code itself but simply adds a parameter to the request
-to the Authorization endpoint as we will see below. The response returns an access-code which can be exchanged for an id_token
-which then identifies the user.
+## 認可コード・フロー (Authorization Code Flow)
+
+[認可コード](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth)・フローは、
+認証メカニズムをサポートするように調整できます。 OIDC は、自動化コード自体のフローを変更するのではなく、
+以下に示すように、認可エンドポイントへのリクエストにパラメータを追加するだけです。レスポンスは、id_token
+と交換できるアクセス・コード (access-code) を返します。これにより、ユーザが識別されます。
 
 ![](https://fiware.github.io/tutorials.Securing-Access/img/authcode-flow.png)
 
-This is an example of the sort of flow used when a third party (such as Travis-CI) asks you to log in using your GitHub
-account. Travis never gains access to your password, but does receive details that you are who you claim to be from
-GitHub. 
+これは、Travis-CI などのサード・パーティが GitHub アカウントを使用してログインするように要求するときに使用される
+種類のフローの例です。 Travis があなたのパスワードにアクセスすることはありませんが、GitHub からあなたが主張している
+人物であるという詳細を受け取ります。
 
-### Authorization Code - Sample Code
+<a name="authorization-code---sample-code"/>
 
-A user must first be redirected to **Keyrock**, requesting a `code`, `oa.getAuthorizeUrl()` is returning a URL of the
-form `/oauth/authorize?response_type=code&client_id={{client-id}}&state=oic&redirect_uri={{callback_url}}&scope=openid`
+### 認可コード - サンプル・コード
 
-The value "openid" is included in the scope parameter of the request to indicate to Keyrock that this is an OIDC request.
-The state value in this tutorial could be "oauth2" ans "oic". This value indicates how to manage the answers coming 
-from Keyrock
+ユーザは最初に **Keyrock** にリダイレクトされ、 `code` をリクエストする必要があります。`oa.getAuthorizeUrl()` は
+`/oauth/authorize?response_type=code&client_id={{client-id}}&state=oic&redirect_uri={{callback_url}}&scope=openid`
+形式の URL を返します
+
+"openid" の値は、これが OIDC リクエストであることを Keyrock に示すために、リクエストのスコープ・パラメータに
+含まれています。このチュートリアルの状態値は、"oauth2" と "oic" の場合があります。 この値は、Keyrock
+からの回答を管理する方法を示します。
 
 ```javascript
 function authCodeOICGrant(req, res) {
@@ -342,8 +387,10 @@ function authCodeOICGrant(req, res) {
 }
 ```
 
-The after the User authorizes access, the response is received by the `redirect_uri` and is handled in the code below, a
-interim access code is received from **Keyrock** and second request must be made to obtain a usable `id_token`.
+ユーザがアクセスを承認した後、レスポンスは `redirect_uri` によって受信され、以下のコードで処理されます。
+**Keyrock** から暫定アクセス・コードを受け取り、使用可能な `id_token` を取得するために2番目のリクエストを
+行う必要があります。
+
 
 ```javascript
 function authCodeOICGrantCallback(req, res) {
@@ -358,8 +405,8 @@ function authCodeOICGrantCallback(req, res) {
 }
 ```
 
-The id_token is just a JWT that we can validate using the JWT Secret that we have preconfigured in the application through
-the envioronment variables and obtain the user information from that id_token.
+id_tokenは、環境変数を介してアプリケーションで事前構成した JWT Secret を使用して検証し、その id_token
+からユーザ情報を取得できる JWT にすぎません。
 
 ```javascript
 function getUserFromIdToken(req, idToken) {
@@ -371,7 +418,7 @@ function getUserFromIdToken(req, idToken) {
 }
 ```
 
-The decoded json is return as shown:
+デコードされた json は、次のように返されます:
 
 ```json
 {
@@ -394,42 +441,48 @@ The decoded json is return as shown:
 }
 ```
 
-### Authorization Code - Running the Example
+<a name="authorization-code---running-the-example"/>
 
-It is possible to invoke the Authorization Code grant flow programmatically, by bringing up the page
-`http://localhost:3000/` and clicking on the Authorization Code Button
+### 認可コード - サンプルの実行
 
-The user is initially redirected to **Keyrock**, and must log in
+`http://localhost:3000/` のページを表示し、Authorization Code ボタンをクリックすることで、
+認可コード・グラント・フロー (Authorization Code grant flow) をプログラムで呼び出すことができます。
+
+ユーザは最初に **Keyrock** にリダイレクトされ、ログインする必要があります
 
 ![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-log-in.png)
 
-The user must then authorize the request
+次に、ユーザはリクエストを承認する必要があります
 
 ![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-authorize.png)
 
-The response displays the user on the top right of the screen, details of the token are flashed onto the screen:
+レスポンスでは、画面の右上にユーザが表示され、トークンの詳細が画面に表示されます:
 
 ![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/authCode-OIDC-web.png)
 
-> **Note** Unless you deliberately log out of **Keyrock** > `http://localhost:3005`, the existing **Keyrock** session
-> which has already permitted access will be used for subsequent authorization requests, so the **Keyrock** login screen
-> will not be shown again.
+> **注** **Keyrock** > `http://localhost:3005` から故意にログアウトしない限り、すでにアクセスを許可している既存の
+> **Keyrock** セッションが後続の認証リクエストに使用されるため、 **Keyrock** ログイン画面が再び表示されることは
+> ありません。
 
-## Implicit Flow
+<a name="implicit-flow"/>
 
+## 暗黙フロー (Implicit Flow)
 
-The [Implicit](https://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth) flow can also be adapted to support
-authentication mechanisms. As well as in the authorization code grant, OIDC does not modify the flow but changes the response_type
-of the requests. This flow returns an `id_token` directly rather than returning an interim access-code. This is
-less secure than the Authcode flow but can be used in some client-side applications
+[暗黙](https://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth)フローは、
+認証メカニズムをサポートするように調整することもできます。OIDC は、認可コード・グラントと同様に、
+フローを変更せずに、リクエストの response_type を変更します。このフローは、暫定的なアクセスコードを返すのではなく、
+`id_token` を直接返します。これは 認可コード・フローほど安全ではありませんが、一部のクライアント側
+アプリケーションで使用できます。
 
 ![](https://fiware.github.io/tutorials.Securing-Access/img/implicit-flow.png)
 
-### Implicit Flow - Sample Code
+<a name="implicit-flow---sample-code"/>
 
-A user must first be redirected to **Keyrock**, requesting a `token`, `oa.getAuthorizeUrl()` is returning a URL of the
-form `/oauth/authorize?response_type=id_token&client_id={{client-id}}&state=oic&redirect_uri={{callback_url}}`
-Note that to follow an OIDC flow the response type is "id_token".
+### 暗黙フロー - サンプル・コード
+
+ユーザは最初に **Keyrock** にリダイレクトされ、`token` をリクエストする必要があります。`oa.getAuthorizeUrl()` は、
+`/oauth/authorize?response_type=id_token&client_id={{client-id}}&state=oic&redirect_uri={{callback_url}}` 形式の
+URL を返します。OIDC フローに従う場合、レスポンスのタイプは "id_token" であることに注意してください。
 
 ```javascript
 function implicitOICGrant(req, res) {
@@ -438,8 +491,8 @@ function implicitOICGrant(req, res) {
 }
 ```
 
-The after the User authorizes access, the response is received by the `redirect_uri` and is handled in the code below, a
-usable access token is received from **Keyrock**
+ユーザがアクセスを承認した後、レスポンスは `redirect_uri` によって受信され、以下のコードで処理され、
+使用可能なアクセス・トークンが **Keyrock** から受信されます。
 
 ```javascript
 function implicitOICGrantCallback(req, res) {
@@ -450,45 +503,49 @@ function implicitOICGrantCallback(req, res) {
 }
 ```
 
-The id_token is just a JWT that we can validate using the JWT Secret as it was explained in the autorization code section.
+id_token は、認可コードのセクションで説明したように、JWT Secret を使用して検証できる単なる JWT です。
 
+<a name="implicit-flow---running-the-example"/>
 
-### Implicit Flow - Running the Example
+### 暗黙フロー - サンプルの実行
 
-It is possible to invoke the Implicit grant flow programmatically, by bringing up the page `http://localhost:3000/` and
-clicking on the Implicit Grant Button
+`http://localhost:3000/` のページを表示し、Implicit Grant ボタンをクリックすることにより、プログラムで
+暗黙グラント・フロー (Implicit grant flow) を呼び出すことができます。
 
-The user is initially redirected to **Keyrock**, and must log in
+ユーザは最初に **Keyrock** にリダイレクトされ、ログインする必要があります。
 
 ![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-log-in.png)
 
-The user must then authorize the request
+ユーザはリクエストを承認する必要があります。
 
 ![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-authorize.png)
 
-The response displays the user on the top right of the screen, details of the token are also flashed onto the screen:
+レスポンスでは、画面の右上にユーザが表示され、トークンの詳細も画面に表示されます:
 
 ![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/implicit-OIDC-web.png)
 
-> **Note** Unless you deliberately log out of **Keyrock** > `http://localhost:3005`, the existing **Keyrock** session
-> which has already permitted access will be used for subsequent authorization request.
+> **注** **Keyrock** > `http://localhost:3005` から故意にログアウトしない限り、すでにアクセスを許可している既存の
+> **Keyrock** セッションが後続の認証リクエストに使用されます。
 
+<a name="hybrid-flow"/>
 
-## Hybrid Flow
+## ハイブリッド・フロー (Hybrid Flow)
 
-The [Hybrid](https://openid.net/specs/openid-connect-core-1_0.html#HybridFlowAuth) flow combines the authorization code and
-the implict grant. It could be useful to parallelize process in the Front-End and the Back-End of applications. 
-The flow is similar to the authorization code grant but in this case tokens are generated in both authorization 
-and token endpoint.
+[ハイブリッド](https://openid.net/specs/openid-connect-core-1_0.html#HybridFlowAuth)・フローは、認可コードと
+暗黙グラントを組み合わせています。 アプリケーションのフロント・エンドとバック・エンドでプロセスを並列化すると
+便利な場合があります。フローは認可コード・グラントに似ていますが、この場合、トークンは認可エンドポイントと
+トークン・エンドポイントの両方で生成されます。
 
-### Hybrid - Sample Code
+<a name="authorization-code---sample-code"/>
 
-A user must first be redirected to **Keyrock**, requesting a `code`, `oa.getAuthorizeUrl()` is returning a URL of the
-form `/oauth/authorize?response_type=code id_token token&client_id={{client-id}}&state=oic&redirect_uri={{callback_url}}&scope=openid`
-Note that in a hybrid flow is required to include all the response_types: code, token and id_token. In the first request this will
-generate an authorization code, an access token and an id_token. If we also include the scope "openid", when using authorzation code
-previously generated, Keyrock generates a new access token and a new id_token.
+### ハイブリッド - サンプル・コード
 
+ユーザは最初に **Keyrock** にリダイレクトされ、`code` をリクエストする必要があります。`oa.getAuthorizeUrl()` は
+`/oauth/authorize?response_type=code id_token token&client_id={{client-id}}&state=oic&redirect_uri={{callback_url}}&scope=openid`
+形式の URL を返します。ハイブリッド・フローでは、すべての response_types (code, token, id_token)
+を含める必要があることに注意してください。最初のリクエストでは、これにより認可コード、アクセス・トークン、および
+id_token が生成されます。 スコープ "openid" も含める場合、以前に生成された認可コードを使用すると、Keyrock
+は新しいアクセス・トークンと新しい id_token を生成します。
 
 ```javascript
 function hybridOICGrant(req, res) {
@@ -498,8 +555,9 @@ function hybridOICGrant(req, res) {
 
 ```
 
-The after the User authorizes access, the response is received by the `redirect_uri` and is handled in the code below, a
-interim access code is received from **Keyrock** and second request must be made to obtain a usable `id_token`.
+ユーザがアクセスを承認した後、レスポンスは `redirect_uri` によって受信され、以下のコードで処理されます。
+暫定アクセス・コード (A interim access code) は **Keyrock** から受信され、使用可能な `id_token`
+を取得するために2番目のリクエストを行う必要があります。
 
 ```javascript
 function authCodeOICGrantCallback(req, res) {
@@ -514,28 +572,40 @@ function authCodeOICGrantCallback(req, res) {
 }
 ```
 
-The id_token is just a JWT that we can validate using the JWT Secret as it was explained in the autorization code section.
+id_token は、認可コードのセクションで説明したように、JWT Secret を使用して検証できる単なる JWT です。
 
-### Hybrid - Running the Example
+<a name="authorization-code---running-the-example"/>
 
-It is possible to invoke the Hybrid  flow programmatically, by bringing up the page
-`http://localhost:3000/` and clicking on the Authorization Code Button
+### ハイブリッド - サンプルの実行
 
-The user is initially redirected to **Keyrock**, and must log in
+`http://localhost:3000/` のページを表示し、Authorization Code ボタンをクリックすることにより、
+プログラムでハイブリッド・フローを呼び出すことができます。
+
+ユーザは最初に **Keyrock** にリダイレクトされ、ログインする必要があります。
+
 
 ![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-log-in.png)
 
-The user must then authorize the request
+ユーザはリクエストを承認する必要があります。
 
 ![](https://fiware.github.io/tutorials.Securing-Access/img/keyrock-authorize.png)
 
-The response displays the user on the top right of the screen, details of the token are flashed onto the screen:
+レスポンスでは、画面の右上にユーザが表示され、トークンの詳細も画面に表示されます:
 
 ![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/hybrid-OIDC-web.png)
 
-> **Note** Unless you deliberately log out of **Keyrock** > `http://localhost:3005`, the existing **Keyrock** session
-> which has already permitted access will be used for subsequent authorization requests, so the **Keyrock** login screen
-> will not be shown again.
+> **注** **Keyrock** > `http://localhost:3005` から故意にログアウトしない限り、すでにアクセスを許可している既存の
+> **Keyrock** セッションが後続の認証リクエストに使用されるため、 **Keyrock** ログイン画面が再び表示されることは
+> ありません。
+
+# 次のステップ
+
+高度な機能を追加することで、アプリケーションに複雑さを加える方法を知りたいですか
+？このシリーズ
+の[他のチュートリアル](https://www.letsfiware.jp/fiware-tutorials)を読むことで見
+つけることができます :
+
+---
 
 ## License
 

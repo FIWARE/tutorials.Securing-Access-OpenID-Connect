@@ -54,11 +54,11 @@ The OpenID Connect flows are build on the top of these three OAuth 2.0 grant flo
 -   [Hybrid](https://openid.net/specs/openid-connect-core-1_0.html#HybridFlowAuth)
 
 
-Authorization and authentication are two completely different things. The first one allows or not to access certain data while the second one is about sign in. OAuth 2.0 enables authorization processes but it lacks ways to identify and authenticate users. OIDC was created to solve OAuth 2.0 authentication issue. Either OAuth 2.0 and OIDC generate a token that identifies the user avoiding exposing the username and password. Particularly, OIDC generates a Json Web Token (JWT) that applications can intrinsically  validate and obtain user information directly from itself.
+Authorization and authentication are two completely different things. The first one allows or not to access certain data while the second one is about sign in. OAuth 2.0 enables authorization processes, but it lacks ways to identify and authenticate users. OIDC was created to solve OAuth 2.0 authentication issue. Either OAuth 2.0 and OIDC generate a token that identifies the user avoiding exposing the username and password. Particularly, OIDC generates a Json Web Token (JWT) that applications can intrinsically validate and obtain user information directly from itself.
 
 ## Standard Concepts of Json Web Tokens
 
-A JWT has the follofing structure:
+A JWT has the following structure:
 
 -   Header. It identifies the algorithm used to sign the Json Web Token.
 ```json
@@ -82,7 +82,7 @@ A JWT has the follofing structure:
 Crypto-Algorithm ( base64urlEncoding(header) + '.' + base64urlEncoding(payload), secret)
 ```
 
-The JWT is the result of enconding each part using Base64 and concatenating them with points. For instance:
+The JWT is the result of encoding each part using Base64 and concatenating them with points. For instance:
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiaHR0cHM6Ly9maXdhcmUtaWRtLmNvbSIsImlhdCI6MTUxNjIzOTAyMiwidXNlcm5hbWUiOiJBbGljZSIsImdyYXZhdGFyIjp0cnVlfQ.dZ7z0u_4FZC7xiVQDtGAl7NRT0fK8_5hJqYa9E-4xGE
 ```
@@ -99,10 +99,10 @@ technology which allows to different components isolated into their respective e
 -   To install Docker on Linux follow the instructions [here](https://docs.docker.com/install/)
 
 **Docker Compose** is a tool for defining and running multi-container Docker applications. A
-[YAML file](https://raw.githubusercontent.com/Fiware/tutorials.Identity-Management/master/docker-compose.yml) is used
-configure the required services for the application. This means all container services can be brought up in a single
-command. Docker Compose is installed by default as part of Docker for Windows and Docker for Mac, however Linux users
-will need to follow the instructions found [here](https://docs.docker.com/compose/install/)
+[YAML file](https://raw.githubusercontent.com/Fiware/tutorials.Securing-Access-OpenID-Connect/master/docker-compose.yml)
+is used configure the required services for the application. This means all container services can be brought up in a
+single command. Docker Compose is installed by default as part of Docker for Windows and Docker for Mac, however Linux
+users will need to follow the instructions found [here](https://docs.docker.com/compose/install/)
 
 ## Cygwin
 
@@ -175,7 +175,7 @@ tutorial:
 The `tutorial` container is listening on two ports:
 
 -   Port `3000` is exposed so we can see the web page displaying the Dummy IoT devices.
--   Port `3001` is exposed purely for tutorial access - so that cUrl or Postman can make UltraLight commands without
+-   Port `3001` is exposed purely for tutorial access - so that cUrl or Postman can make Ultralight commands without
     being part of the same network.
 
 The `tutorial` container is driven by environment variables as shown:
@@ -198,7 +198,7 @@ To start the installation, do the following:
 
 ```console
 git clone https://github.com/FIWARE/tutorials.Securing-Access-OpenID-Connect.git
-cd tutorials.Securing-Access
+cd tutorials.Securing-Access-OpenID-Connect
 
 ./services create
 ```
@@ -300,7 +300,7 @@ and look around.
 FIWARE **Keyrock** complies with the OIDC standard described in [OpenID Connect 1.0](https://openid.net/specs/openid-connect-core-1_0.html)
 and supports all three standard authentication flows defined there.
 
-As OIDC is build on the top pf OAuth 2.0, when making requests to the OAuth Token Endpoint,
+As OIDC is built on the top pf OAuth 2.0, when making requests to the OAuth Token Endpoint,
 the `Authorization` header is built by combining the application Client ID and Client Secret
 credentials provided by the **Keyrock** separated by a `:` and base-64encoded. The value can be generated as shown:
 
@@ -315,7 +315,7 @@ dHV0b3JpYWwtZGNrci1zaXRlLTAwMDAteHByZXNzd2ViYXBwOnR1dG9yaWFsLWRja3Itc2l0ZS0wMDAw
 ## Authorization Code Flow
 
 The [Authorization Code](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth) flow can be adapted to support
-authentication mechansims. OIDC does not modify the flow of the autorization code itself but simply adds a parameter to the request
+authentication mechanisms. OIDC does not modify the flow of the authorization code itself but simply adds a parameter to the request
 to the Authorization endpoint as we will see below. The response returns an access-code which can be exchanged for an id_token
 which then identifies the user.
 
@@ -331,7 +331,7 @@ A user must first be redirected to **Keyrock**, requesting a `code`, `oa.getAuth
 form `/oauth/authorize?response_type=code&client_id={{client-id}}&state=oic&redirect_uri={{callback_url}}&scope=openid`
 
 The value "openid" is included in the scope parameter of the request to indicate to Keyrock that this is an OIDC request.
-The state value in this tutorial could be "oauth2" ans "oic". This value indicates how to manage the answers coming
+The state value in this tutorial could be "oauth2" and "oic". This value indicates how to manage the answers coming
 from Keyrock
 
 ```javascript
@@ -358,7 +358,7 @@ function authCodeOICGrantCallback(req, res) {
 ```
 
 The id_token is just a JWT that we can validate using the JWT Secret that we have preconfigured in the application through
-the envioronment variables and obtain the user information from that id_token.
+the environment variables and obtain the user information from that id_token.
 
 ```javascript
 function getUserFromIdToken(req, idToken) {
@@ -449,7 +449,7 @@ function implicitOICGrantCallback(req, res) {
 }
 ```
 
-The id_token is just a JWT that we can validate using the JWT Secret as it was explained in the autorization code section.
+The id_token is just a JWT that we can validate using the JWT Secret as it was explained in the authorization code section.
 
 
 ### Implicit Flow - Running the Example
@@ -476,7 +476,7 @@ The response displays the user on the top right of the screen, details of the to
 ## Hybrid Flow
 
 The [Hybrid](https://openid.net/specs/openid-connect-core-1_0.html#HybridFlowAuth) flow combines the authorization code and
-the implict grant. It could be useful to parallelize process in the Front-End and the Back-End of applications.
+the implicit grant. It could be useful to parallelize process in the Front-End and the Back-End of applications.
 The flow is similar to the authorization code grant but in this case tokens are generated in both authorization
 and token endpoint.
 
@@ -485,7 +485,7 @@ and token endpoint.
 A user must first be redirected to **Keyrock**, requesting a `code`, `oa.getAuthorizeUrl()` is returning a URL of the
 form `/oauth/authorize?response_type=code id_token token&client_id={{client-id}}&state=oic&redirect_uri={{callback_url}}&scope=openid`
 Note that in a hybrid flow is required to include all the response_types: code, token and id_token. In the first request this will
-generate an authorization code, an access token and an id_token. If we also include the scope "openid", when using authorzation code
+generate an authorization code, an access token and an id_token. If we also include the scope "openid", when using authorization code
 previously generated, Keyrock generates a new access token and a new id_token.
 
 
@@ -513,11 +513,11 @@ function authCodeOICGrantCallback(req, res) {
 }
 ```
 
-The id_token is just a JWT that we can validate using the JWT Secret as it was explained in the autorization code section.
+The id_token is just a JWT that we can validate using the JWT Secret as it was explained in the authorization code section.
 
 ### Hybrid - Running the Example
 
-It is possible to invoke the Hybrid  flow programmatically, by bringing up the page
+It is possible to invoke the Hybrid flow programmatically, by bringing up the page
 `http://localhost:3000/` and clicking on the Authorization Code Button
 
 The user is initially redirected to **Keyrock**, and must log in
