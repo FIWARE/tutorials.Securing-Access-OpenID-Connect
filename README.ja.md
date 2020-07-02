@@ -3,6 +3,7 @@
 [![FIWARE Security](https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/security.svg)](https://github.com/FIWARE/catalogue/blob/master/security/README.md)
 [![License: MIT](https://img.shields.io/github/license/fiware/tutorials.Securing-Access.svg)](https://opensource.org/licenses/MIT)
 [![Support badge](https://nexus.lab.fiware.org/repository/raw/public/badges/stackoverflow/fiware.svg)](https://stackoverflow.com/questions/tagged/fiware)
+[![OpenID 1.0](https://img.shields.io/badge/OpenID-1.0-ff7059.svg)](https://openid.net/specs/openid-connect-core-1_0.html)
 <br/>
 [![Documentation](https://img.shields.io/readthedocs/fiware-tutorials.svg)](https://fiware-tutorials.rtfd.io)
 
@@ -11,7 +12,7 @@
 を補足するものです。このチュートリアルでは、FIWARE アプリケーションへのアクセスも保護しますが、さまざまな
 OpenID Connect フローを使用してユーザを認証します。
 
-## コンテンツ 
+## コンテンツ
 
 <details>
 <summary><strong>詳細</strong></summary>
@@ -412,7 +413,7 @@ id_tokenは、環境変数を介してアプリケーションで事前構成し
 function getUserFromIdToken(req, idToken) {
   return new Promise(function(resolve, reject) {
     jwt.verify(idToken, jwtSecret, function(error, decoded) {
-      // Decoded --> Json with user, token and issuer information 
+      // Decoded --> Json with user, token and issuer information
     });
   });
 }
