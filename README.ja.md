@@ -17,7 +17,7 @@ OpenID Connect フローを使用してユーザを認証します。
 <details>
 <summary><strong>詳細</strong></summary>
 
--   [認証 ID](#authenticating-identities)
+-   [ID の認証](#authenticating-identities)
     -   [Json Web Tokens の標準概念](#standard-concepts-of-json-web-tokens)
 -   [前提条件](#prerequisites)
     -   [Docker](#docker)
@@ -41,7 +41,7 @@ OpenID Connect フローを使用してユーザを認証します。
 
 <a name="authenticating-identities"/>
 
-# 認証 ID (Authenticating Identities)
+# ID の認証 (Authenticating Identities)
 
 > "Yes, your home is your castle, but it is also your identity
 > and your possibility to be open to others.
