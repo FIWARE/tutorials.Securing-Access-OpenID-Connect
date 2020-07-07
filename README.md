@@ -336,7 +336,7 @@ The JWT secret could be also refreshed by clicking on the "Reset secret" button 
 
 Enabling OIDC can be also done when creating an application in Keyrock. It can be maked a POST request to the
 `/v1/applications` as described in [Roles and Permissions tutorial](https://github.com/FIWARE/tutorials.Roles-Permissions),
-including the "openid" into the "scope" attribute.
+including the `openid` into the `scope` attribute.
 
 ```console
 curl -iX POST \
@@ -354,13 +354,13 @@ curl -iX POST \
       "implicit",
       "password"
     ],
-    "scope": "opeind",
+    "scope": "openid",
     "token_types": ["permanent"]
   }
 }'
 ```
 
-If the applications has been already created, this can also be done from the command-line by making PATCH request.
+If the applications has been already created, this can also be done from the command-line by making a PATCH request.
 
 ```console
 curl -X PATCH \
