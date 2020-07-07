@@ -26,6 +26,9 @@ This tutorial complements the previous [Securing Access tutorial](https://github
 -   [Start Up](#start-up)
     -   [Dramatis Personae](#dramatis-personae)
 -   [OIDC Flows](#oidc-flows)
+    -   [Enable OpenID Connect](#enable-openid-connect)
+        -   [GUI](#gui)
+        -   [REST API](#rest-api)
     -   [Authorization Code Flow](#authorization-code-flow)
         -   [Authorization Code - Sample Code](#authorization-code---sample-code)
         -   [Authorization Code - Running the Example](#authorization-code---running-the-example)
@@ -327,7 +330,7 @@ The secret to be used when validating Json Web Tokens can be found in the applic
 
 ![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/jwtsecret-OIDC.png)
 
-The JWT secret could be also refreshed by clicking on the "Reset secret" button in the OAuth2 cretentials section.
+The JWT secret could be also refreshed by clicking on the "Reset secret" button in the OAuth2 credentials section.
 
 ![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/jwtsecret-reset-OIDC.png)
 
