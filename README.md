@@ -313,6 +313,67 @@ echo tutorial-dckr-site-0000-xpresswebapp:tutorial-dckr-site-0000-clientsecret |
 dHV0b3JpYWwtZGNrci1zaXRlLTAwMDAteHByZXNzd2ViYXBwOnR1dG9yaWFsLWRja3Itc2l0ZS0wMDAwLWNsaWVudHNlY3JldAo=
 ```
 
+## Enable OpenID Connect
+
+OpenID Connect can be enabled on a Keyrock's application either through the GUI or through the REST API.
+
+### GUI
+
+Once signed-in, users are able to activate OIDC in their application through the edit webpage.
+
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/edit-OIDC.png)
+
+The secret to be used when validating Json Web Tokens can be found in the application information webpage.
+
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/jwtsecret-OIDC.png)
+
+The JWT secret could be also refreshed by clicking on the "Reset secret" button in the OAuth2 cretentials section.
+
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/jwtsecret-reset-OIDC.png)
+
+
+### REST API
+
+Enabling OIDC can be also done when creating an application in Keyrock. It can be maked a POST request to the
+`/v1/applications` as described in [Roles and Permissions tutorial](https://github.com/FIWARE/tutorials.Roles-Permissions),
+including the "openid" into the "scope" attribute.
+
+```console
+curl -iX POST \
+  'http://localhost:3005/v1/applications' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Auth-token: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' \
+  -d '{
+  "application": {
+    "name": "Tutorial Application",
+    "description": "FIWARE Application protected by OAuth2 and Keyrock",
+    "redirect_uri": "http://tutorial/login",
+    "url": "http://tutorial",
+    "grant_type": [
+      "authorization_code",
+      "implicit",
+      "password"
+    ],
+    "scope": "opeind",
+    "token_types": ["permanent"]
+  }
+}'
+```
+
+If the applications has been already created, this can also be done from the command-line by making PATCH request.
+
+```console
+curl -X PATCH \
+  'http://localhost:3005/v1/applications/{{application-id}}' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Auth-token: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' \
+  -d '{
+  "application": {
+    "scope": "openid"
+  }
+}'
+```
+
 ## Authorization Code Flow
 
 The [Authorization Code](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth) flow can be adapted to support
