@@ -293,7 +293,7 @@ INSERT INTO `oauth_client` VALUES
 ('tutorial-dckr-site-0000-xpresswebapp','FIWARE Tutorial',
   'FIWARE Application protected by OAuth2 and Keyrock','tutorial-dckr-site-0000-clientsecret',
   'http://localhost:3000','http://localhost:3000/login',NULL,'default',
-  'authorization_code,implicit,password,client_credentials,refresh_token,hybrid','code,id_token,token',NULL,'openid',NULL,'bearer', 'jsonwebtokenpass'),
+  'authorization_code,implicit,password,client_credentials,refresh_token,hybrid','code,id_token,token',NULL,'openid',NULL,'jwt,bearer', 'jsonwebtokenpass'),
 ('tutorial-lcal-host-0000-xpresswebapp','localhost App',
   'Localhost Callback protected by OAuth2 and Keyrock','tutorial-lcal-host-0000-clientsecret',
   'http://localhost:3000','http://localhost:3000/login',NULL,'default',
