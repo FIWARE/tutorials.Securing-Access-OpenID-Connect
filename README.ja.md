@@ -27,6 +27,9 @@ OpenID Connect フローを使用してユーザを認証します。
 -   [起動](#start-up)
     -   [登場人物 (Dramatis Personae)](#dramatis-personae)
 -   [OIDC フロー](#oidc-flows)
+    -   [OpenID Connect の有効化](#enable-openid-connect)
+        -   [GUI](#gui)
+        -   [REST API](#rest-api)
     -   [認可コード・フロー (Authorization Code Flow)](#authorization-code-flow)
         -   [認可コード - サンプル・コード](#authorization-code---sample-code)
         -   [認可コード - サンプルの実行](#authorization-code---running-the-example)
@@ -352,6 +355,72 @@ echo tutorial-dckr-site-0000-xpresswebapp:tutorial-dckr-site-0000-clientsecret |
 
 ```
 dHV0b3JpYWwtZGNrci1zaXRlLTAwMDAteHByZXNzd2ViYXBwOnR1dG9yaWFsLWRja3Itc2l0ZS0wMDAwLWNsaWVudHNlY3JldAo=
+```
+
+<a name="enable-openid-connect"/>
+
+## OpenID Connect の有効化
+
+OpenID Connect は、GUI または REST API を介して Keyrock のアプリケーションで有効にできます。
+
+<a name="gui"/>
+
+### GUI
+
+サイン・インすると、ユーザは Web ページを通じてアプリケーションで OIDC をアクティブ化できます。
+
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/edit-OIDC.png)
+
+Json Web トークンを検証するときに使用される Secret は、アプリケーション情報の Web ページにあります。
+
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/jwtsecret-OIDC.png)
+
+JWT secret は、OAuth2 クレデンシャル・セクションの "Secret をリセット" ボタンをクリックして更新することもできます。
+
+![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/jwtsecret-reset-OIDC.png)
+
+<a name="rest-api"/>
+
+### REST API
+
+Keyrock でアプリケーションを作成するときに、OIDC を有効にすることもできます。
+[ロールとパーミッションのチュートリアル](https://github.com/FIWARE/tutorials.Roles-Permissions) で説明されているように、
+`/v1/applications` への POST リクエストを作成でき、`scope` 属性に `openid` を含めます。
+
+```console
+curl -iX POST \
+  'http://localhost:3005/v1/applications' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Auth-token: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' \
+  -d '{
+  "application": {
+    "name": "Tutorial Application",
+    "description": "FIWARE Application protected by OAuth2 and Keyrock",
+    "redirect_uri": "http://tutorial/login",
+    "url": "http://tutorial",
+    "grant_type": [
+      "authorization_code",
+      "implicit",
+      "password"
+    ],
+    "scope": "openid",
+    "token_types": ["permanent"]
+  }
+}'
+```
+
+アプリケーションがすでに作成されている場合は、PATCH リクエストを行うことにより、コマンドラインから行うこともできます。
+
+```console
+curl -X PATCH \
+  'http://localhost:3005/v1/applications/{{application-id}}' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Auth-token: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' \
+  -d '{
+  "application": {
+    "scope": "openid"
+  }
+}'
 ```
 
 <a name="authorization-code-flow"/>
