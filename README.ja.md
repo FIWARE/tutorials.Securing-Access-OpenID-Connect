@@ -18,7 +18,8 @@ OpenID Connect フローを使用してユーザを認証します。
 <summary><strong>詳細</strong></summary>
 
 -   [ID の認証](#authenticating-identities)
-    -   [Json Web Tokens の標準概念](#standard-concepts-of-json-web-tokens)
+    -   [:arrow_forward: ビデオ: OpenID Connect とは何ですか？](#arrow_forward-video-what-is-openid-connect)
+    -   [JSON Web Tokens の標準概念](#standard-concepts-of-json-web-tokens)
 -   [前提条件](#prerequisites)
     -   [Docker](#docker)
     -   [Cygwin](#cygwin)
@@ -55,7 +56,7 @@ OpenID Connect フローを使用してユーザを認証します。
 アプリケーションを保護するためには、ID が本当に本人であることを認証する必要があります。FIWARE **Keyrock**
 generic enabler は OAuth 2.0 に加えて、[OpenID Connect](https://openid.net/connect/) (OIDC) をサポートし、
 サードパーティ・アプリケーションがユーザを認証できるようにします。**OpenID Connect** は、OAuth 2.0 プロトコルの上に
-あるシンプルな ID レイヤです。[Json Web Tokens](https://jwt.io/) を使用して、ユーザの身元を確認し、
+あるシンプルな ID レイヤです。[JSON Web Tokens](https://jwt.io/) を使用して、ユーザの身元を確認し、
 これらのユーザに関する基本的なプロファイルを取得できます。
 
 OpenID Connect フローは、次の3つの OAuth 2.0 グラント・フローの上に構築されています:
@@ -67,16 +68,49 @@ OpenID Connect フローは、次の3つの OAuth 2.0 グラント・フロー�
 認可 (Authorization) と認証 (Authentication) は2つのまったく異なるものです。1つ目は特定のデータへのアクセスを
 許可または禁止し、2つ目はサイン・インについてです。OAuth2.0 は認可プロセスを有効にしますが、ユーザを識別および
 認証する方法がありません。OIDC は、OAuth 2.0 認証の問題を解決するために作成されました。OAuth 2.0 と OIDC
-は、ユーザ名とパスワードの公開を避けてユーザを識別するトークンを生成します。特に、OIDC は Json Web Token (JWT)
+は、ユーザ名とパスワードの公開を避けてユーザを識別するトークンを生成します。特に、OIDC は JSON Web Token (JWT)
 を生成します。これは、アプリケーションが本質的にそれ自体からユーザ情報を検証して直接取得できるものです。
+
+<a name="arrow_forward-video-what-is-openid-connect"/>
+
+## :arrow_forward: ビデオ: OpenID Connect とは何ですか？
+
+[![](https://fiware.github.io/tutorials.Step-by-Step/img/video-logo.png)](https://www.youtube.com/watch?v=Kb56GzQ2pSk "OpenID connect")
+
+上の画像をクリックして、OpenID Connect と Identity に関するビデオをご覧ください。
+
+OAuth2 は、アクセス権を付与するためのメカニズムです。具体的には、**認証** (Authorization) です -
+(_これを実行できますか？_)。技術的には、OAuth プロトコル内には、**ID** (Identity) 自体の概念がないため、
+モバイル・アプリのログインのような、特定の**認証**のユースケースを実行できる場合でも、実際には**認証**
+(_私は User X です_) 向けに設計されていません。OpenID は OAuth2 の拡張機能を提供し、アプリケーションが
+標準的な方法でユーザ情報を取得できるようにします。
+
+OpenID 接続は、(**Keyrock** など) 複数のエンティティ・プロバイダで機能し、JSON Web tokens を使用して
+操作されます。いくつかの基本的なユーザ情報を保持する追加の ID token をレスポンスに追加します。
+追加のユーザ情報は、標準化された `/userinfo` エンドポイントからリクエストできます。
+
+OpenID connect リクエストは、OAuth2 リクエストと非常によく似たフローに従います。これらは、最初の
+リクエストを行うときに `openid` スコープを使用して区別されます。レスポンスには、以下に説明する要素を
+保持するエンコードされた JSON Web Token (JWT) が含まれます。
+
+| 名前  | 説明                                         |
+| ----- | -------------------------------------------- |
+| `iss` | レスポンスの発行者の発行者 ID                |
+| `sub` | サブジェクト識別子                           |
+| `aud` | この ID token の対象となるオーディエンス (s) |
+| `exp` | 有効期限                                     |
+| `iat` | JWT が発行された時刻                         |
+
+他のエントリも追加される場合があります。完全な OpenID 仕様は
+[こちら](https://openid.net/specs/openid-connect-core-1_0.html) にあります。
 
 <a name="standard-concepts-of-json-web-tokens"/>
 
-## Json Web Tokens の標準概念
+## JSON Web Tokens の標準概念
 
-JWT の構造は次のとおりです:
+JSON Web Token (JWT) の構造は次のとおりです:
 
--   ヘッダー。これは Json Web Token の署名に使用されるアルゴリズムを識別します。
+-   ヘッダー。これは JSON Web Token の署名に使用されるアルゴリズムを識別します。
 
 ```json
 {
@@ -99,13 +133,13 @@ JWT の構造は次のとおりです:
 
 -   署名 (Signature)。次のように生成されます:
 
-```
+```text
 Crypto-Algorithm ( base64urlEncoding(header) + '.' + base64urlEncoding(payload), secret)
 ```
 
 JWT は、Base64 を使用して各部分をエンコードし、それらをポイント (.) で連結した結果です。例えば：
 
-```
+```text
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiaHR0cHM6Ly9maXdhcmUtaWRtLmNvbSIsImlhdCI6MTUxNjIzOTAyMiwidXNlcm5hbWUiOiJBbGljZSIsImdyYXZhdGFyIjp0cnVlfQ.dZ7z0u_4FZC7xiVQDtGAl7NRT0fK8_5hJqYa9E-4xGE
 ```
 
@@ -371,7 +405,7 @@ OpenID Connect は、GUI または REST API を介して Keyrock のアプリケ
 
 ![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/edit-OIDC.png)
 
-Json Web トークンを検証するときに使用される Secret は、アプリケーション情報の Web ページにあります。
+JSON Web トークンを検証するときに使用される Secret は、アプリケーション情報の Web ページにあります。
 
 ![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/jwtsecret-OIDC.png)
 
@@ -385,7 +419,7 @@ JWT secret は、OAuth2 クレデンシャル・セクションの "Secret を�
 
 Keyrock でアプリケーションを作成するときに、OIDC を有効にすることもできます。
 [ロールとパーミッションのチュートリアル](https://github.com/FIWARE/tutorials.Roles-Permissions) で説明されているように、
-`/v1/applications` への POST リクエストを作成でき、`scope` 属性に `openid` を含めます。
+`/v1/applications` への POST リクエストを介して作成でき、`scope` 属性に `openid` を含めます。
 
 ```console
 curl -iX POST \
@@ -482,7 +516,7 @@ id_tokenは、環境変数を介してアプリケーションで事前構成し
 function getUserFromIdToken(req, idToken) {
   return new Promise(function(resolve, reject) {
     jwt.verify(idToken, jwtSecret, function(error, decoded) {
-      // Decoded --> Json with user, token and issuer information
+      // Decoded --> JSON with user, token and issuer information
     });
   });
 }
