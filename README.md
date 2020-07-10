@@ -17,6 +17,7 @@ This tutorial complements the previous [Securing Access tutorial](https://github
 <summary><strong>Details</strong></summary>
 
 -   [Authenticating Identities](#authenticating-identities)
+    -   [:arrow_forward: Video: What is OpenID Connect?](#arrow_forward-video-what-is-openid-connect)
     -   [Standard Concepts of Json Web Tokens](#standard-concepts-of-json-web-tokens)
 -   [Prerequisites](#prerequisites)
     -   [Docker](#docker)
@@ -60,9 +61,25 @@ The OpenID Connect flows are build on the top of these three OAuth 2.0 grant flo
 
 Authorization and authentication are two completely different things. The first one allows or not to access certain data while the second one is about sign in. OAuth 2.0 enables authorization processes, but it lacks ways to identify and authenticate users. OIDC was created to solve OAuth 2.0 authentication issue. Either OAuth 2.0 and OIDC generate a token that identifies the user avoiding exposing the username and password. Particularly, OIDC generates a Json Web Token (JWT) that applications can intrinsically validate and obtain user information directly from itself.
 
+## :arrow_forward: Video: What is OpenID Connect?
+
+[![](https://fiware.github.io/tutorials.Step-by-Step/img/video-logo.png)](https://www.youtube.com/watch?v=Kb56GzQ2pSk "OpenID connect")
+
+Click on the image above to watch a video on OpenID connect and identity.
+
+OAuth2 is a mechanism for granting access - specifically **Authorization** - _Can I do this?_). Technically, within the OAuth protocol there is no concept of **Identity** per-se and therefore it is not really designed for **Authentication** (_I am User X_) even if it is able to fulfil certain **Authentication** use cases such mobile app log in. OpenID provides an extension to OAuth2 enabling applications to obtain user information in a standard manner.
+
+OpenID connect works across multiple entity providers (such as **Keyrock**) and is operated using JSON Web tokens. It adds an additional ID token to the response which holds some basic user information, additional user information can be requested from the standardized `/userinfo` endpoint.
+
+OpenID connect requests follow a very similar flow to OAuth2 requests. They
+are distinguished by using the `openid` scope when making the initial request. The response contains an encoded JWT token (described below) holding elements such as the subject (`sub`) and issuing authority (`iss`) of the token.
+
+The full OpenID specification can be found [here](https://openid.net/specs/openid-connect-core-1_0.html)
+
+
 ## Standard Concepts of Json Web Tokens
 
-A JWT has the following structure:
+A JSON Web Token (JWT) has the following structure:
 
 -   Header. It identifies the algorithm used to sign the Json Web Token.
 ```json
@@ -82,12 +99,12 @@ A JWT has the following structure:
 }
 ```
 -   Signature. It is generated as follows:
-```
+```text
 Crypto-Algorithm ( base64urlEncoding(header) + '.' + base64urlEncoding(payload), secret)
 ```
 
 The JWT is the result of encoding each part using base64 and concatenating them with points. For instance:
-```
+```text
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiaHR0cHM6Ly9maXdhcmUtaWRtLmNvbSIsImlhdCI6MTUxNjIzOTAyMiwidXNlcm5hbWUiOiJBbGljZSIsImdyYXZhdGFyIjp0cnVlfQ.dZ7z0u_4FZC7xiVQDtGAl7NRT0fK8_5hJqYa9E-4xGE
 ```
 
