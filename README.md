@@ -72,9 +72,17 @@ OAuth2 is a mechanism for granting access - specifically **Authorization** - _Ca
 OpenID connect works across multiple entity providers (such as **Keyrock**) and is operated using JSON Web tokens. It adds an additional ID token to the response which holds some basic user information, additional user information can be requested from the standardized `/userinfo` endpoint.
 
 OpenID connect requests follow a very similar flow to OAuth2 requests. They
-are distinguished by using the `openid` scope when making the initial request. The response contains an encoded JWT token (described below) holding elements such as the subject (`sub`) and issuing authority (`iss`) of the token.
+are distinguished by using the `openid` scope when making the initial request. The response contains an encoded JWT token holding elements described below:
 
-The full OpenID specification can be found [here](https://openid.net/specs/openid-connect-core-1_0.html)
+| name  | description |
+| ---   | --- |
+| `iss` | Issuer Identifier for the Issuer of the response. |
+| `sub` | Subject Identifier. |
+| `aud` | Audience(s) that this ID Token is intended for. |
+| `exp` | Expiration time. |
+| `iat` | Time at which the JWT was issued. |
+
+Other entries may also be addded. The full OpenID specification can be found [here](https://openid.net/specs/openid-connect-core-1_0.html)
 
 
 ## Standard Concepts of Json Web Tokens
@@ -339,11 +347,11 @@ OpenID Connect can be enabled on a Keyrock's application either through the GUI 
 
 ### GUI
 
-Once signed-in, users are able to activate OIDC in their application through the edit webpage.
+Once signed-in, users are able to activate OIDC in their application through the edit web page.
 
 ![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/edit-OIDC.png)
 
-The secret to be used when validating Json Web Tokens can be found in the application information webpage.
+The secret to be used when validating JSON Web Tokens can be found in the application information web page.
 
 ![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/jwtsecret-OIDC.png)
 
@@ -354,7 +362,7 @@ The JWT secret could be also refreshed by clicking on the "Reset secret" button 
 
 ### REST API
 
-Enabling OIDC can be also done when creating an application in Keyrock. It can be maked a POST request to the
+Enabling OIDC can be also done when creating an application in Keyrock. It can be made via a POST request to the
 `/v1/applications` as described in [Roles and Permissions tutorial](https://github.com/FIWARE/tutorials.Roles-Permissions),
 including the `openid` into the `scope` attribute.
 
