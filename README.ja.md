@@ -273,6 +273,7 @@ YAML ファイルに記述されている、他の `tutorial`コンテナの設�
 ```console
 git clone https://github.com/FIWARE/tutorials.Securing-Access-OpenID-Connect.git
 cd tutorials.Securing-Access-OpenID-Connect
+git checkout NGSI-v2
 
 ./services create
 ```

@@ -245,6 +245,7 @@ To start the installation, do the following:
 ```console
 git clone https://github.com/FIWARE/tutorials.Securing-Access-OpenID-Connect.git
 cd tutorials.Securing-Access-OpenID-Connect
+git checkout NGSI-v2
 
 ./services create
 ```
