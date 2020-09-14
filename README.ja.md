@@ -281,7 +281,7 @@ git checkout NGSI-v2
 > **注** Docker イメージの最初の作成には最大 3 分かかります
 
 その後、リポジトリ内で提供される
-[services](https://github.com/FIWARE/tutorials.Securing-Access-OpenID-Connect/blob/master/services) Bash
+[services](https://github.com/FIWARE/tutorials.Securing-Access-OpenID-Connect/blob/NGSI-v2/services) Bash
 スクリプトを実行することによって、コマンドラインからすべてのサービスを初期化することができます:
 
 ```console
