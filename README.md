@@ -253,8 +253,8 @@ git checkout NGSI-v2
 > **Note** The initial creation of Docker images can take up to three minutes
 
 Thereafter, all services can be initialized from the command-line by running the
-[services](https://github.com/FIWARE/tutorials.Securing-Access-OpenID-Connect/blob/NGSI-v2/services) Bash script provided
-within the repository:
+[services](https://github.com/FIWARE/tutorials.Securing-Access-OpenID-Connect/blob/NGSI-v2/services) Bash script
+provided within the repository:
 
 ```console
 ./services <command>
@@ -457,10 +457,10 @@ interim access code is received from **Keyrock** and second request must be made
 function authCodeOICGrantCallback(req, res) {
     return oa
         .getOAuthAccessToken(req.query.code, "authorization_code")
-        .then(results => {
+        .then((results) => {
             return getUserFromIdToken(req, results.id_token);
         })
-        .then(user => {
+        .then((user) => {
             // Store user
         });
 }
@@ -471,8 +471,8 @@ through the environment variables and obtain the user information from that id_t
 
 ```javascript
 function getUserFromIdToken(req, idToken) {
-    return new Promise(function(resolve, reject) {
-        jwt.verify(idToken, jwtSecret, function(error, decoded) {
+    return new Promise(function (resolve, reject) {
+        jwt.verify(idToken, jwtSecret, function (error, decoded) {
             // Decoded --> Json with user, token and issuer information
         });
     });
@@ -550,7 +550,7 @@ usable access token is received from **Keyrock**
 
 ```javascript
 function implicitOICGrantCallback(req, res) {
-    return getUserFromIdToken(req, req.query.id_token).then(user => {
+    return getUserFromIdToken(req, req.query.id_token).then((user) => {
         // Store User and return
     });
 }
@@ -609,10 +609,10 @@ interim access code is received from **Keyrock** and second request must be made
 function authCodeOICGrantCallback(req, res) {
     return oa
         .getOAuthAccessToken(req.query.code, "hybrid")
-        .then(results => {
+        .then((results) => {
             return getUserFromIdToken(req, results.id_token);
         })
-        .then(user => {
+        .then((user) => {
             // Store User and return
         });
 }
