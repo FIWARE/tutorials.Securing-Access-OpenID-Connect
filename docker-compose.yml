@@ -71,7 +71,12 @@ services:
     hostname: tutorial
     container_name: fiware-tutorial
     depends_on:
-      - keyrock
+      keyrock:
+        condition: service_started
+      orion:
+        condition: service_started
+      iot-agent:
+        condition: service_started
     networks:
       default:
         ipv4_address: 172.18.1.7
