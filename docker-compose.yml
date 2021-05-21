@@ -71,10 +71,8 @@ services:
     hostname: tutorial
     container_name: fiware-tutorial
     depends_on:
-      keyrock:
-        condition: service_started
-      orion:
-        condition: service_started
+      - keyrock
+      - orion
     networks:
       default:
         ipv4_address: 172.18.1.7
