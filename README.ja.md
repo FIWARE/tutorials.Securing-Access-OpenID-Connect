@@ -220,7 +220,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiaHR0cHM
 ```yaml
 tutorial:
     image: fiware/tutorials.context-provider
-    hostname: tutorial
+    hostname: iot-sensors
     container_name: fiware-tutorial
     networks:
         default:
