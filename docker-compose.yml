@@ -109,7 +109,7 @@ services:
       - "KEYROCK_PORT=${KEYROCK_PORT}"
       - "KEYROCK_CLIENT_ID=tutorial-dckr-site-0000-xpresswebapp"
       - "KEYROCK_CLIENT_SECRET=tutorial-dckr-site-0000-clientsecret"
-      - "KEYROCK_JWT_SECRET=jsonwebtokenpass"
+      - "KEYROCK_JWT_SECRET=59de900a973fa2e0"
       - "CALLBACK_URL=http://localhost:${TUTORIAL_APP_PORT}/login"
 
 
