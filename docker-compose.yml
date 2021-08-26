@@ -61,6 +61,9 @@ services:
       - IDM_ADMIN_PASS=test
     secrets:
       - my_secret_data
+    volumes:
+      - ./certs:/opt/fiware-idm/certs/applications:ro # Preload Keyrock Certs
+    
     healthcheck:
       interval: 5s
 
