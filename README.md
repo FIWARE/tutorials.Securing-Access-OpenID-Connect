@@ -509,7 +509,7 @@ The decoded json is return as shown:
 }
 ```
 
-To decode the JWT yourself, you can paste the token into the [JWT Website](https://jwt.io/) - The signature used to sign the token is `59de900a973fa2e0` and can be pasted into the website to verify that the encoded identity came from Keyrock
+To decode the JWT yourself, you can paste the token into the [JWT site](https://jwt.io/) - The signature used to sign the token is `59de900a973fa2e0` and can be pasted into the site to verify that the encoded identity came from Keyrock
 
 
 ```text
