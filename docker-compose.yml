@@ -25,7 +25,8 @@ services:
     hostname: context
     container_name: fiware-ld-context
     networks:
-        - default
+      default:
+        ipv4_address: 172.18.1.12
     ports:
         - "3004:80"
     volumes:
@@ -51,8 +52,7 @@ services:
   
   # Keyrock is an Identity Management Front-End
   keyrock:
-    #image: fiware/idm:${KEYROCK_VERSION}
-    image: keyrock
+    image: fiware/idm:${KEYROCK_VERSION}
     container_name: fiware-keyrock
     hostname: keyrock
     networks:
@@ -136,6 +136,7 @@ services:
       - "OPENWEATHERMAP_KEY_ID=<ADD_YOUR_KEY_ID>"
       - "TWITTER_CONSUMER_KEY=<ADD_YOUR_CONSUMER_KEY>"
       - "TWITTER_CONSUMER_SECRET=<ADD_YOUR_CONSUMER_SECRET>"
+      - ROBOT_ENABLED=true
 
 
 
@@ -149,7 +150,8 @@ services:
     ports:
       - "${MONGO_DB_PORT}:${MONGO_DB_PORT}" # localhost:27017
     networks:
-      - default
+      default:
+        ipv4_address: 172.18.1.14
     volumes:
       - mongo-db:/data
     healthcheck:
@@ -181,14 +183,15 @@ services:
       - my_secret_data
 
   iot-agent:
-    image: telefonicaiot/iotagent-ul:${ULTRALIGHT_VERSION}
+    image: fiware/iotagent-ul:${ULTRALIGHT_VERSION}
     hostname: iot-agent
     container_name: fiware-iot-agent
     depends_on:
       - mongo-db
       - ld-context
     networks:
-      - default
+      default:
+        ipv4_address: 172.18.1.8
     ports:
       - "${IOTA_NORTH_PORT}:${IOTA_NORTH_PORT}" # localhost:4041
       - "${IOTA_SOUTH_PORT}:${IOTA_SOUTH_PORT}" # localhost:7896

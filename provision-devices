@@ -20,6 +20,23 @@ curl -s -o /dev/null -X POST  \
   -d '{
  "services": [
    {
+     "apikey":      "108685930",
+     "cbroker":     "http://orion:1026",
+     "entity_type": "Robot",
+     "resource":    "/iot/d",
+     "protocol":    "PDI-IoTA-UltraLight",
+     "transport":   "HTTP",
+     "timezone":    "Europe/Berlin",
+     "attributes": [
+       {"object_id": "gps", "name": "location", "type": "geo:point"},
+       {"object_id": "s", "name": "state", "type": "Property"}
+      ],
+      "commands": [ 
+        {"name": "unlock","type": "command"},
+        {"name": "request","type": "command"}
+      ]
+   },
+   {
      "apikey":      "1068318794",
      "cbroker":     "http://orion:1026",
      "entity_type": "Motion",
@@ -113,6 +130,38 @@ curl -s -o /dev/null -X POST  \
    }
  ]
 }'
+
+####################################################
+
+#
+# Provision a delivery robot
+#
+
+curl -s -o /dev/null -X POST \
+  "http://iot-agent:4041/iot/devices" \
+  -H 'Content-Type: application/json' \
+  -H 'fiware-service: openiot' \
+  -H 'fiware-servicepath: /' \
+  -d '{
+  "devices": [
+    {
+      "device_id": "robot001",
+      "entity_name": "urn:ngsi-ld:Robot:001",
+      "entity_type": "Robot",
+      "protocol": "PDI-IoTA-UltraLight",
+      "timezone": "Europe/Berlin",
+      "endpoint": "http://iot-sensors:3001/iot/robot001",
+      "static_attributes": [
+        {
+          "name": "description",
+          "type": "Property",
+          "value": "Delivery Robot"
+        }
+      ]
+    }
+  ]
+}'
+
 
 ####################################################
 
