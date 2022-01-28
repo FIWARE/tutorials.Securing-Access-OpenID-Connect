@@ -16,10 +16,12 @@
 # 
 # see: https://github.com/FIWARE/helm-charts/
 #
-version: "3.5"
+version: "3.8"
 services:
   # Orion is the context broker
   orion:
+    labels:
+      org.fiware: 'tutorial'
     image: fiware/orion:${ORION_VERSION}
     container_name: fiware-orion
     depends_on:
@@ -36,6 +38,8 @@ services:
       interval: 5s
   # Keyrock is an Identity Management Front-End
   keyrock:
+    labels:
+      org.fiware: 'tutorial'
     image: fiware/idm:${KEYROCK_VERSION}
     container_name: fiware-keyrock
     hostname: keyrock
@@ -70,6 +74,8 @@ services:
 
   # Tutorial acts as a series of dummy IoT Sensors over HTTP
   tutorial:
+    labels:
+      org.fiware: 'tutorial'
     image: fiware/tutorials.context-provider
     hostname: iot-sensors
     container_name: fiware-tutorial
@@ -116,6 +122,8 @@ services:
 
   # Databases
   mongo-db:
+    labels:
+      org.fiware: 'tutorial'
     image: mongo:${MONGO_DB_VERSION}
     hostname: mongo-db
     container_name: db-mongo
@@ -136,6 +144,8 @@ services:
 
   mysql-db:
     restart: always
+    labels:
+      org.fiware: 'tutorial'
     image: mysql:${MYSQL_DB_VERSION}
     hostname: mysql-db
     container_name: db-mysql
@@ -157,6 +167,8 @@ services:
 
 networks:
   default:
+    labels:
+      org.fiware: 'tutorial'
     ipam:
       config:
         - subnet: 172.18.1.0/24
