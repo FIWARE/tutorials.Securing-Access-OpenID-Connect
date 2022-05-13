@@ -1,11 +1,10 @@
-[![FIWARE Banner](https://fiware.github.io/tutorials.Securing-Access/img/fiware.png)](https://www.fiware.org/developers)
+[![FIWARE Banner](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/fiware.png)](https://www.fiware.org/developers)
 
 [![FIWARE Security](https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/security.svg)](https://github.com/FIWARE/catalogue/blob/master/security/README.md)
 [![License: MIT](https://img.shields.io/github/license/fiware/tutorials.Securing-Access.svg)](https://opensource.org/licenses/MIT)
 [![Support badge](https://img.shields.io/badge/tag-fiware-orange.svg?logo=stackoverflow)](https://stackoverflow.com/questions/tagged/fiware)
 [![OpenID 1.0](https://img.shields.io/badge/OpenID-1.0-ff7059.svg)](https://openid.net/specs/openid-connect-core-1_0.html)
-<br/>
-[![Documentation](https://img.shields.io/readthedocs/fiware-tutorials.svg)](https://fiware-tutorials.rtfd.io)
+<br/> [![Documentation](https://img.shields.io/readthedocs/fiware-tutorials.svg)](https://fiware-tutorials.rtfd.io)
 
 このチュートリアルは、以前の
 [セキュリティで保護されたアクセスのチュートリアル](https://github.com/FIWARE/tutorials.Securing-Access)
@@ -40,6 +39,7 @@ OpenID Connect フローを使用してユーザを認証します。
     -   [ハイブリッド・フロー](#hybrid-flow)
         -   [ハイブリッド - サンプル・コード](#authorization-code---sample-code)
         -   [ハイブリッド - サンプルの実行](#authorization-code---running-the-example)
+-   [次のステップ](#next-steps)
 
 </details>
 
@@ -114,8 +114,8 @@ JSON Web Token (JWT) の構造は次のとおりです:
 
 ```json
 {
-  "alg": "HS256",
-  "typ": "JWT"
+    "alg": "HS256",
+    "typ": "JWT"
 }
 ```
 
@@ -123,11 +123,11 @@ JSON Web Token (JWT) の構造は次のとおりです:
 
 ```json
 {
-  "sub": "1234567890",
-  "iss": "https://fiware-idm.com",
-  "iat": 1516239022,
-  "username": "Alice",
-  "gravatar": true
+    "sub": "1234567890",
+    "iss": "https://fiware-idm.com",
+    "iat": 1516239022,
+    "username": "Alice",
+    "gravatar": true
 }
 ```
 
@@ -321,21 +321,21 @@ git checkout NGSI-v2
    詳細 <b>(クリックして拡大)</b>
   </summary>
 
-| 名前       | E メール                  | パスワード |
-| ---------- | ------------------------- | ---------- |
-| alice      | alice-the-admin@test.com  | `test`     |
-| bob        | bob-the-manager@test.com  | `test`     |
-| charlie    | charlie-security@test.com | `test`     |
-| manager1   | manager1@test.com         | `test`     |
-| manager2   | manager2@test.com         | `test`     |
-| detective1 | detective1@test.com       | `test`     |
-| detective2 | detective2@test.com       | `test`     |
+| 名前       | E メール                    | パスワード |
+| ---------- | --------------------------- | ---------- |
+| alice      | `alice-the-admin@test.com`  | `test`     |
+| bob        | `bob-the-manager@test.com`  | `test`     |
+| charlie    | `charlie-security@test.com` | `test`     |
+| manager1   | `manager1@test.com`         | `test`     |
+| manager2   | `manager2@test.com`         | `test`     |
+| detective1 | `detective1@test.com`       | `test`     |
+| detective2 | `detective2@test.com`       | `test`     |
 
-| 名前    | E メール            | パスワード |
-| ------- | ------------------- | ---------- |
-| eve     | eve@example.com     | `test`     |
-| mallory | mallory@example.com | `test`     |
-| rob     | rob@example.com     | `test`     |
+| 名前    | E メール              | パスワード |
+| ------- | --------------------- | ---------- |
+| eve     | `eve@example.com`     | `test`     |
+| mallory | `mallory@example.com` | `test`     |
+| rob     | `rob@example.com`     | `test`     |
 
 </details>
 
@@ -487,7 +487,7 @@ curl -X PATCH \
 
 ```javascript
 function authCodeOICGrant(req, res) {
-    const path = oa.getAuthorizeUrl('code', 'openid', 'oic');
+    const path = oa.getAuthorizeUrl("code", "openid", "oic");
     return res.redirect(path);
 }
 ```
@@ -500,13 +500,13 @@ function authCodeOICGrant(req, res) {
 ```javascript
 function authCodeOICGrantCallback(req, res) {
     return oa
-        .getOAuthAccessToken(req.query.code, 'authorization_code')
-        .then(results => {
+        .getOAuthAccessToken(req.query.code, "authorization_code")
+        .then((results) => {
             return getUserFromIdToken(req, results.id_token);
         })
-        .then(user => {
+        .then((user) => {
             // Store user
-        })
+        });
 }
 ```
 
@@ -515,15 +515,22 @@ id_tokenは、環境変数を介してアプリケーションで事前構成し
 
 ```javascript
 function getUserFromIdToken(req, idToken) {
-  return new Promise(function(resolve, reject) {
-    jwt.verify(idToken, jwtSecret, function(error, decoded) {
-      // Decoded --> JSON with user, token and issuer information
+    return new Promise(function (resolve, reject) {
+        jwt.verify(idToken, jwtSecret, function (error, decoded) {
+            // Decoded --> Json with user, token and issuer information
+        });
     });
-  });
 }
 ```
 
 デコードされた json は、次のように返されます:
+
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
 
 ```json
 {
@@ -542,8 +549,20 @@ function getUserFromIdToken(req, idToken) {
     "sub": "aaaaaaaa-good-0000-0000-000000000000",
     "aud": "tutorial-dckr-site-0000-xpresswebapp",
     "exp": 1516238462,
-    "iat": 1516239022,
+    "iat": 1516239022
 }
+```
+
+JWT を自分でデコードするには、トークンを[JWTサイト](https://jwt.io/) に貼り付けることができます -
+トークンの署名に使用される署名は `59de900a973fa2e0` であり、サイトに貼り付けて、 エンコードされた
+ID は Keyrock から来ました。
+
+```text
+HMACSHA256(
+  base64UrlEncode(header) + "." +
+  base64UrlEncode(payload),
+  59de900a973fa2e0
+)
 ```
 
 <a name="authorization-code---running-the-example"/>
@@ -591,7 +610,7 @@ URL を返します。OIDC フローに従う場合、レスポンスのタイ�
 
 ```javascript
 function implicitOICGrant(req, res) {
-    const path = oa.getAuthorizeUrl('id_token', null, 'oic');
+    const path = oa.getAuthorizeUrl("id_token", null, "oic");
     return res.redirect(path);
 }
 ```
@@ -601,10 +620,9 @@ function implicitOICGrant(req, res) {
 
 ```javascript
 function implicitOICGrantCallback(req, res) {
-    return getUserFromIdToken(req, req.query.id_token)
-        .then(user => {
-          // Store User and return
-        })
+    return getUserFromIdToken(req, req.query.id_token).then((user) => {
+        // Store User and return
+    });
 }
 ```
 
@@ -654,8 +672,8 @@ id_token が生成されます。 スコープ "openid" も含める場合、以
 
 ```javascript
 function hybridOICGrant(req, res) {
-  const path = oa.getAuthorizeUrl('code id_token token', 'openid', 'oic');
-  return res.redirect(path);
+    const path = oa.getAuthorizeUrl("code id_token token", "openid", "oic");
+    return res.redirect(path);
 }
 
 ```
@@ -667,11 +685,11 @@ function hybridOICGrant(req, res) {
 ```javascript
 function authCodeOICGrantCallback(req, res) {
     return oa
-        .getOAuthAccessToken(req.query.code, 'hybrid')
-        .then(results => {
+        .getOAuthAccessToken(req.query.code, "hybrid")
+        .then((results) => {
             return getUserFromIdToken(req, results.id_token);
         })
-        .then(user => {
+        .then((user) => {
             // Store User and return
         })
 }
@@ -703,15 +721,17 @@ id_token は、認可コードのセクションで説明したように、JWT S
 > **Keyrock** セッションが後続の認証リクエストに使用されるため、 **Keyrock** ログイン画面が再び表示されることは
 > ありません。
 
+<a name="next-steps"></a>
+
 # 次のステップ
 
 高度な機能を追加することで、アプリケーションに複雑さを加える方法を知りたいですか
 ？このシリーズ
 の[他のチュートリアル](https://www.letsfiware.jp/fiware-tutorials)を読むことで見
-つけることができます :
+つけることができます。
 
 ---
 
 ## License
 
-[MIT](LICENSE) © 2018-2020 FIWARE Foundation e.V.
+[MIT](LICENSE) © 2018-2022 FIWARE Foundation e.V.
