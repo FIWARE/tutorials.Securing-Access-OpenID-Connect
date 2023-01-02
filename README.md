@@ -663,4 +663,4 @@ The response displays the user on the top right of the screen, details of the to
 
 ## License
 
-[MIT](LICENSE) © 2020 FIWARE Foundation e.V.
+[MIT](LICENSE) © 2020-2023 FIWARE Foundation e.V.

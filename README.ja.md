@@ -734,4 +734,4 @@ id_token は、認可コードのセクションで説明したように、JWT S
 
 ## License
 
-[MIT](LICENSE) © 2018-2022 FIWARE Foundation e.V.
+[MIT](LICENSE) © 2018-2023 FIWARE Foundation e.V.
