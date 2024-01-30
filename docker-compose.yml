@@ -18,8 +18,8 @@
 #
 version: "3.8"
 services:
-  # Orion is the context broker
-  orion:
+  # Orion is an NGSI-v2 context broker
+  orion-v2:
     labels:
       org.fiware: 'tutorial'
     image: quay.io/fiware/orion:${ORION_VERSION}
@@ -82,7 +82,7 @@ services:
     container_name: fiware-tutorial
     depends_on:
       - keyrock
-      - orion
+      - orion-v2
     networks:
       default:
         ipv4_address: 172.18.1.7
