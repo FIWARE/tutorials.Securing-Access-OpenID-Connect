@@ -1,4 +1,4 @@
-[![FIWARE Banner](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect-OpenID-Connect/img/fiware.png)](https://www.fiware.org/developers)
+[![FIWARE Banner](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/fiware.png)](https://www.fiware.org/developers)
 
 [![FIWARE Security](https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/security.svg)](https://github.com/FIWARE/catalogue/blob/master/security/README.md)
 [![License: MIT](https://img.shields.io/github/license/fiware/tutorials.Securing-Access-OpenID-Connect.svg)](https://opensource.org/licenses/MIT)
