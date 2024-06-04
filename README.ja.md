@@ -21,7 +21,7 @@ OpenID Connect フローを使用してユーザを認証します。
     -   [JSON Web Tokens の標準概念](#standard-concepts-of-json-web-tokens)
 -   [前提条件](#prerequisites)
     -   [Docker](#docker)
-    -   [Cygwin](#cygwin)
+    -   [WSL](#wsl)
 -   [アーキテクチャ](#architecture)
     -   [チュートリアルのセキュリティ設定](#tutorial-security-configuration)
 -   [起動](#start-up)
@@ -168,11 +168,9 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiaHR0cHM
 してインストールされますが、Linux ユーザは[ここ](https://docs.docker.com/compose/install/)に記載されている手順に従う
 必要があります。
 
-<a name="cygwin"/>
+## WSL
 
-## Cygwin
-
-シンプルな bash スクリプトを使用してサービスを開始します。Windows ユーザは [cygwin](http://www.cygwin.com/) を
+シンプルな bash スクリプトを使用してサービスを開始します。Windows ユーザは [を使用して Windows に Linux をインストールする方法](https://learn.microsoft.com/ja-jp/windows/wsl/install) を
 ダウンロードして、Windows 上の Linux ディストリビューションと同様のコマンドライン機能を提供する必要があります。
 
 <a name="architecture"/>

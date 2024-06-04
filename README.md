@@ -26,7 +26,7 @@ This tutorial also secures access to a FIWARE application but using various Open
     -   [Standard Concepts of Json Web Tokens](#standard-concepts-of-json-web-tokens)
 -   [Prerequisites](#prerequisites)
     -   [Docker](#docker)
-    -   [Cygwin](#cygwin)
+    -   [WSL](#wsl)
 -   [Architecture](#architecture)
     -   [Tutorial Security Configuration](#tutorial-security-configuration)
 -   [Start Up](#start-up)
@@ -155,10 +155,11 @@ is used configure the required services for the application. This means all cont
 single command. Docker Compose is installed by default as part of Docker for Windows and Docker for Mac, however Linux
 users will need to follow the instructions found [here](https://docs.docker.com/compose/install/)
 
-## Cygwin
+## WSL
 
-We will start up our services using a simple bash script. Windows users should download [cygwin](http://www.cygwin.com/)
-to provide a command-line functionality similar to a Linux distribution on Windows.
+We will start up our services using a simple bash script. Windows users should download the
+[Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install) to provide a command-line
+functionality similar to a Linux distribution on Windows.
 
 # Architecture
 
