@@ -256,6 +256,7 @@ git checkout NGSI-v2
 ```
 
 > [!NOTE]
+>
 > The initial creation of Docker images can take up to three minutes
 
 Thereafter, all services can be initialized from the command-line by running the
@@ -269,6 +270,7 @@ provided within the repository:
 Where `<command>` will vary depending upon the exercise we wish to activate.
 
 > [!NOTE]
+>
 > If you want to clean up and start over again you can do so with the following command:
 >
 > ```console
@@ -602,8 +604,9 @@ The response displays the user on the top right of the screen, details of the to
 ![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/implicit-OIDC-web.png)
 
 > [!NOTE]
-> Unless you deliberately log out of **Keyrock** > `http://localhost:3005`, the existing **Keyrock** session
-> which has already permitted access will be used for subsequent authorization request.
+>
+> Unless you deliberately log out of **Keyrock** > `http://localhost:3005`, the existing **Keyrock** session which has
+> already permitted access will be used for subsequent authorization request.
 
 ## Hybrid Flow
 
@@ -665,9 +668,10 @@ The response displays the user on the top right of the screen, details of the to
 ![](https://fiware.github.io/tutorials.Securing-Access-OpenID-Connect/img/hybrid-OIDC-web.png)
 
 > [!NOTE]
-> Unless you deliberately log out of **Keyrock** > `http://localhost:3005`, the existing **Keyrock** session
-> which has already permitted access will be used for subsequent authorization requests, so the **Keyrock** login screen
-> will not be shown again.
+>
+> Unless you deliberately log out of **Keyrock** > `http://localhost:3005`, the existing **Keyrock** session which has
+> already permitted access will be used for subsequent authorization requests, so the **Keyrock** login screen will not
+> be shown again.
 
 ## License
 
