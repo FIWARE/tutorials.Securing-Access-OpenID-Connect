@@ -678,4 +678,4 @@ The response displays the user on the top right of the screen, details of the to
 
 ## License
 
-[MIT](LICENSE) © 2020-2024 FIWARE Foundation e.V.
+[MIT](LICENSE) © 2020-2025 FIWARE Foundation e.V.
